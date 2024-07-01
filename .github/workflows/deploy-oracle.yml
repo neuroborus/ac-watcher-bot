@@ -1,4 +1,4 @@
-name: TREASURE_HUNTER_ORACLE
+name: AC_WATCHER_ORACLE
 
 on:
   workflow_dispatch:
@@ -20,18 +20,16 @@ jobs:
 
       - name: Set up environment variables
         env:
-          CHAINS: ${{ vars.CHAINS }}
-          ORACLE_HOST: ${{ vars.ORACLE_HOST }}
+          ADMIN_ID: ${{ vars.ADMIN_ID }}
+          GROUP_ID: ${{ vars.GROUP_ID }}
 
-          ADMIN_TG_ID: ${{ secrets.ADMIN_TG_ID }}
-          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
-          MONGO_URL: ${{ secrets.MONGO_URL }}
-          ORACLE_SSH: ${{ secrets.ORACLE_SSH }}
+          HOST: ${{ secrets.HOST }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: |
-          echo "CHAINS=$CHAINS" >> .env
-          echo "ADMIN_TG_ID=$ADMIN_TG_ID" >> .env
-          echo "TG_BOT_TOKEN=$TG_BOT_TOKEN" >> .env
-          echo "MONGO_URL=$MONGO_URL" >> .env
+          echo "ADMIN_ID=$ADMIN_ID" >> .env
+          echo "GROUP_ID=$GROUP_ID" >> .env
+          echo "HOST=$HOST" >> .env
+          echo "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN" >> .env
           echo "ORACLE_HOST=$ORACLE_HOST" >> .env
           echo "ORACLE_SSH=$ORACLE_SSH" >> .env
       - name: Enable buildx
