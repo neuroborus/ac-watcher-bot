@@ -27,9 +27,9 @@ function addEmojiPrefix(text, level, isAlert = false) {
 
 function formNotify(isOn) {
   if (isOn) {
-    return '🟢 CONNECTION #ESTABLISHED';
+    return '🟢 <b>CONNECTION #ESTABLISHED</b>';
   }
-  return '🔴 CONNECTION #LOST';
+  return '🔴 <b>CONNECTION #LOST</b>';
 }
 
 module.exports = {
