@@ -203,8 +203,7 @@ let isNotifying = false; // It is not a singleton!
 let previousGroupsMessages = new Map(); // groupId - messageID
 async function notifyAboutStatus (status) {
   isNotifying = true;
-  const users = USERS;
-  users.unshift(ADMIN);
+  const users = [ADMIN, ...USERS];
 
   const msg = formNotify(status);
   for (const user of users) {
@@ -231,14 +230,12 @@ async function notifyGroup(msg, groupId) {
 ///////////////////////////////////////////// MIDDLEWARES
 
 async function groupMiddleware (ctx, next) {
-  // await alertService.handleDebug(where, "enter groupMiddleware");
   try {
     const currentChatId = ctx?.update?.message?.chat?.id;
-    // const senderId = ctx?.update?.from?.id;
     if (currentChatId && currentChatId < 0) {
       // If chat is group
       if (!GROUPS.includes(currentChatId)) {
-        // if not our group
+        // if is not our group
         await ctx.leaveChat();
       } else {
         if (!(await processPin(ctx))) {
@@ -247,10 +244,8 @@ async function groupMiddleware (ctx, next) {
         return;
       }
     }
-  } catch (e) {
-    await console.error(
-        "groupMiddleware => " + e,
-    );
+  } catch (err) {
+    console.error("groupMiddleware => " + err);
   }
   await next();
 }
@@ -264,7 +259,7 @@ const processPin = async (ctx) => {
       // await ctx.telegram.deleteMessage(message.chat.id, message.message_id);
       await deleteActionWithRetries(message);
     } catch (err) {
-
+      console.error("processPin => " + err);
     }
   }
   return flag;
