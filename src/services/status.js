@@ -6,7 +6,6 @@ async function getAvailability() {
     return status.alive;
 }
 
-
 module.exports = {
     getAvailability
 };

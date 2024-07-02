@@ -7,12 +7,14 @@ const { formHtmlTagsMessage,
 const { sleep } = require('../utils/time');
 const filesystem = require('../utils/filesystem');
 const { isEligibleChat } = require('../utils/guard');
-const { ADMIN, USERS, GROUPS, PIN_STATUS_IN_GROUPS } = require('../constants/telegram.constants');
+const { ADMIN, USERS, GROUPS, PIN_STATUS_IN_GROUPS, RETRIES, RETRY_DELAY_MS} = require('../constants/telegram.constants');
 const {
   TELEGRAM_BOT_TOKEN,
 } = process.env;
 
+
 const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
+
 const me = (ctx) => ctx.reply(`PONG: user=${ctx?.from?.id} | chat=${ctx?.update?.message?.chat?.id}`);
 
 const sendLogFile = async (layer, ctx) => {
@@ -45,11 +47,14 @@ const status = async (ctx) => {
     console.warn('Actions from not an eligible chat -> ' + chat);
     return;
   }
+  if (isNotifying) ctx.reply('Try later. Notifying...')
   const msg = formNotify(status);
   if (GROUPS.includes(chat)) {
+    console.trace('Sending status to group ' + chat);
     await notifyGroup(msg, chat)
   }
-  if (USERS.includes(chat)) {
+  if (ADMIN === chat || USERS.includes(chat)) {
+    console.trace('Sending status to user ' + chat);
     await sendMessage(msg, chat, { disable_notification: true });
   }
 };
@@ -68,6 +73,7 @@ bot.command('status', status);
 
 
 function startBot () {
+  bot.use(groupMiddleware);
   bot.catch(async (err, ctx) => {
     console.error('Telegram bot caught error -> ' + err);
   });
@@ -192,8 +198,11 @@ async function alertAdmin (what, where, level, logUrl) {
   );
 }
 
+////////////////////////////// Notifications
+let isNotifying = false; // It is not a singleton!
 let previousGroupsMessages = new Map(); // groupId - messageID
 async function notifyAboutStatus (status) {
+  isNotifying = true;
   const users = USERS;
   users.unshift(ADMIN);
 
@@ -205,6 +214,7 @@ async function notifyAboutStatus (status) {
   for (const group of GROUPS) {
     await notifyGroup(msg, group);
   }
+  isNotifying = false;
 }
 
 async function notifyGroup(msg, groupId) {
@@ -218,9 +228,76 @@ async function notifyGroup(msg, groupId) {
 }
 
 
+///////////////////////////////////////////// MIDDLEWARES
+
+async function groupMiddleware (ctx, next) {
+  // await alertService.handleDebug(where, "enter groupMiddleware");
+  try {
+    const currentChatId = ctx?.update?.message?.chat?.id;
+    // const senderId = ctx?.update?.from?.id;
+    if (currentChatId && currentChatId < 0) {
+      // If chat is group
+      if (!GROUPS.includes(currentChatId)) {
+        // if not our group
+        await ctx.leaveChat();
+      } else {
+        if (!(await processPin(ctx))) {
+          // place for other middlewares
+        }
+        return;
+      }
+    }
+  } catch (e) {
+    await console.error(
+        "groupMiddleware => " + e,
+    );
+  }
+  await next();
+}
+
+const processPin = async (ctx) => {
+  let flag = false;
+  const message = ctx?.update?.message;
+  if (message?.pinned_message) {
+    flag = true;
+    try {
+      // await ctx.telegram.deleteMessage(message.chat.id, message.message_id);
+      await deleteActionWithRetries(message);
+    } catch (err) {
+
+    }
+  }
+  return flag;
+}
+
+const deleteActionWithRetries = async (message, attempt = 0) => {
+  if (message?.message_id && attempt < 2) {
+    try {
+      await bot.telegram.deleteMessage(message.chat.id, message.message_id);
+    } catch (e) {
+      console.error(
+          message?.from?.id + ' ' +
+          `deleteActionWithRetries [${attempt}/${
+              RETRIES
+          }] => ` + e
+      );
+      await sleep(RETRY_DELAY_MS);
+      await deleteActionWithRetries(message, attempt + 1);
+    }
+  } else {
+    throw new Error(
+        `All retries to delete action message failed after ${
+            attempt - 1
+        } attempts`,
+    );
+  }
+};
+
+
 
 
 module.exports = {
+  bot,
   startBot,
   infoAdmin,
   alertAdmin,
