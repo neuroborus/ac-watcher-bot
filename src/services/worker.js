@@ -6,7 +6,7 @@ const { sendAlert } = require('./notifications');
 const telegram = require('./telegram.bot');
 const logger = require('../utils/logger');
 const { notifyAboutStatus } = require('./telegram.bot');
-const { HOST } = process.env;
+const { PINGING_HOST } = process.env;
 
 
 let previousStatus;
@@ -24,7 +24,7 @@ function startWorker () {
 
 
 async function penguin() {
-  const status = await ping.promise.probe(HOST);
+  const status = await ping.promise.probe(PINGING_HOST);
 
   console.trace('Current status -> ' + (status ? 'on' : 'off'));
   if (status.alive !== previousStatus) {

@@ -20,15 +20,17 @@ jobs:
 
       - name: Set up environment variables
         env:
-          ADMIN_ID: ${{ vars.ADMIN_ID }}
-          GROUP_ID: ${{ vars.GROUP_ID }}
+          TG_ADMIN_ID: ${{ vars.TG_ADMIN_ID }}
+          TG_GROUPS_IDS: ${{ vars.TG_GROUPS_IDS }}
+          TG_USERS_IDS: ${{ vars.TG_USERS_IDS }}
 
-          HOST: ${{ secrets.HOST }}
+          PINGING_HOST: ${{ secrets.PINGING_HOST }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: |
-          echo "ADMIN_ID=$ADMIN_ID" >> .env
-          echo "GROUP_ID=$GROUP_ID" >> .env
-          echo "HOST=$HOST" >> .env
+          echo "TG_ADMIN_ID=$TG_ADMIN_ID" >> .env
+          echo "TG_GROUPS_IDS=$TG_GROUPS_IDS" >> .env
+          echo "TG_USERS_IDS=$TG_USERS_IDS" >> .env
+          echo "PINGING_HOST=$PINGING_HOST" >> .env
           echo "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN" >> .env
           echo "ORACLE_HOST=$ORACLE_HOST" >> .env
           echo "ORACLE_SSH=$ORACLE_SSH" >> .env

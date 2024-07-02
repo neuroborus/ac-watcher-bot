@@ -6,7 +6,7 @@ const { formHtmlTagsMessage,
 } = require('../utils/messages');
 const { sleep } = require('../utils/time');
 const filesystem = require('../utils/filesystem');
-const { USERS, ADMIN, GROUP } = require('../constants/watcher.constants');
+const { ADMIN, USERS, GROUPS } = require('../constants/telegram.constants');
 const {
   TELEGRAM_BOT_TOKEN,
 } = process.env;
@@ -55,10 +55,13 @@ function startBot () {
     .catch(e => console.error(e));
 }
 
+/////////////////////////// MESSAGING
+
 async function sendMessage (msg, recipient, options = {}, attempt = 0) {
   let isSizeWell = true;
   let filepath = '';
   let document = '';
+  let message;
 
   try {
     await sleep(tgConstants.REQUESTS_PAUSE_MS);
@@ -77,13 +80,13 @@ async function sendMessage (msg, recipient, options = {}, attempt = 0) {
 
     try {
       if (isSizeWell) {
-        await bot.telegram.sendMessage(
+        message = await bot.telegram.sendMessage(
           recipient,
           msg,
           { parse_mode: 'HTML', ...options }
         );
       } else {
-        await bot.telegram.sendDocument(recipient, document);
+        message = await bot.telegram.sendDocument(recipient, document);
       }
     } catch (e) {
       console.error(
@@ -107,7 +110,29 @@ async function sendMessage (msg, recipient, options = {}, attempt = 0) {
       e
     );
   }
+  return message?.message_id;
 }
+
+
+async function deleteMessageWithRetries (msgId, chatId, attempt = 0) {
+  if (attempt <= tgConstants.RETRIES) {
+    try {
+      await sleep(tgConstants.REQUESTS_PAUSE_MS);
+      await bot.telegram.deleteMessage(chatId, msgId);
+    } catch (e) {
+      await alertAdmin(
+          `deleteMessageWithRetries [${msgId}][${attempt}/${
+              tgConstants.RETRIES
+          }] => ` + e,
+          'deleteMessageWithRetries',
+      );
+      await deleteMessageWithRetries(msgId, chatId, attempt + 1);
+    }
+  }
+}
+
+
+/////////////////////////////// WRAPPERS
 
 async function infoAdmin (what, where, level, logUrl) {
   const msg = formHtmlTagsMessage(where, what, level, logUrl);
@@ -127,15 +152,21 @@ async function alertAdmin (what, where, level, logUrl) {
   );
 }
 
+let previousGroupsMessages = new Map(); // groupId - messageID
 async function notifyAboutStatus (status) {
-  const recipients = [];
-  recipients.push(ADMIN);
-  recipients.push(GROUP);
-  recipients.concat(USERS);
-  const msg = formNotify(status);
+  const users = USERS;
+  users.unshift(ADMIN);
 
-  for (const recipient of recipients) {
-    await sendMessage(msg, recipient, { disable_notification: true });
+  const msg = formNotify(status);
+  for (const user of users) {
+    await sendMessage(msg, user, { disable_notification: true });
+  }
+
+  for (const group of GROUPS) {
+    const prevMsgId = previousGroupsMessages.get(group);
+    const newMsgId = await sendMessage(msg, group, { disable_notification: true });
+    if (prevMsgId) await deleteMessageWithRetries(prevMsgId, group);
+    if (newMsgId) previousGroupsMessages.set(group, newMsgId);
   }
 }
 

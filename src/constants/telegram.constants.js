@@ -1,3 +1,5 @@
+const { TG_USERS_IDS, TG_GROUPS_IDS, TG_ADMIN_ID } = process.env;
+
 const COMMANDS_INFO = ' (If there is no response, the file may be empty) ';
 
 module.exports = {
@@ -34,5 +36,12 @@ module.exports = {
       command: 'logs',
       description: 'Get ALL levels inner(!) logs' + COMMANDS_INFO,
     }
-  ]
+  ],
+  ADMIN: parseInt(TG_ADMIN_ID, 10),
+  GROUPS: (
+      TG_GROUPS_IDS ? TG_GROUPS_IDS.split(",") : []
+  ).map(item => parseInt(item, 10)),
+  USERS: (
+      TG_USERS_IDS ? TG_USERS_IDS.split(",") : []
+  ).map(item => parseInt(item, 10)),
 };
