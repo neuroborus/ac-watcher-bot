@@ -23,6 +23,7 @@ jobs:
           TG_ADMIN_ID: ${{ vars.TG_ADMIN_ID }}
           TG_GROUPS_IDS: ${{ vars.TG_GROUPS_IDS }}
           TG_USERS_IDS: ${{ vars.TG_USERS_IDS }}
+          IS_PIN_STATUS_IN_GROUPS: ${{ vars.IS_PIN_STATUS_IN_GROUPS }}
 
           PINGING_HOST: ${{ secrets.PINGING_HOST }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -30,6 +31,7 @@ jobs:
           echo "TG_ADMIN_ID=$TG_ADMIN_ID" >> .env
           echo "TG_GROUPS_IDS=$TG_GROUPS_IDS" >> .env
           echo "TG_USERS_IDS=$TG_USERS_IDS" >> .env
+          echo "IS_PIN_STATUS_IN_GROUPS=$IS_PIN_STATUS_IN_GROUPS" >> .env
           echo "PINGING_HOST=$PINGING_HOST" >> .env
           echo "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN" >> .env
           echo "ORACLE_HOST=$ORACLE_HOST" >> .env

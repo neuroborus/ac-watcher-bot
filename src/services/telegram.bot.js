@@ -6,7 +6,7 @@ const { formHtmlTagsMessage,
 } = require('../utils/messages');
 const { sleep } = require('../utils/time');
 const filesystem = require('../utils/filesystem');
-const { ADMIN, USERS, GROUPS } = require('../constants/telegram.constants');
+const { ADMIN, USERS, GROUPS, PIN_STATUS_IN_GROUPS } = require('../constants/telegram.constants');
 const {
   TELEGRAM_BOT_TOKEN,
 } = process.env;
@@ -131,6 +131,23 @@ async function deleteMessageWithRetries (msgId, chatId, attempt = 0) {
   }
 }
 
+async function pinMessageWithRetries (msgId, chatId, options = {}, attempt = 0) {
+  if (attempt <= tgConstants.RETRIES) {
+    try {
+      await sleep(tgConstants.REQUESTS_PAUSE_MS);
+      await bot.telegram.pinChatMessage(chatId, msgId, options);
+    } catch (e) {
+      await alertAdmin(
+          `pinMessageWithRetries [${msgId}][${attempt}/${
+              tgConstants.RETRIES
+          }] => ` + e,
+          'pinMessageWithRetries',
+      );
+      await pinMessageWithRetries(msgId, chatId, options, attempt + 1);
+    }
+  }
+}
+
 
 /////////////////////////////// WRAPPERS
 
@@ -167,6 +184,9 @@ async function notifyAboutStatus (status) {
     const newMsgId = await sendMessage(msg, group, { disable_notification: true });
     if (prevMsgId) await deleteMessageWithRetries(prevMsgId, group);
     previousGroupsMessages.set(group, newMsgId);
+    if (PIN_STATUS_IN_GROUPS) {
+      await pinMessageWithRetries(newMsgId, group, { disable_notification: true });
+    }
   }
 }
 

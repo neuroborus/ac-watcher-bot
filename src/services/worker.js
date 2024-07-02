@@ -5,7 +5,6 @@ const { HERE, PING_PATTERN} = require('../constants/watcher.constants');
 const { sendAlert } = require('./notifications');
 const telegram = require('./telegram.bot');
 const logger = require('../utils/logger');
-const { notifyAboutStatus } = require('./telegram.bot');
 const { PINGING_HOST } = process.env;
 
 
@@ -33,7 +32,7 @@ async function penguin() {
   } else if (status.alive !== previousStatus) {
     previousStatus = status.alive;
     console.trace('Notifying...');
-    await notifyAboutStatus(status.alive);
+    await telegram.notifyAboutStatus(status.alive);
     console.trace('Notified!');
   }
 }

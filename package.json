@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node ./src/index.js"
   },
-  "author": "",
+  "author": "neuroborus",
   "license": "ISC",
   "dependencies": {
     "dotenv": "^16.4.5",
