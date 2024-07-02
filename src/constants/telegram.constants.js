@@ -9,6 +9,10 @@ module.exports = {
   REQUESTS_PAUSE_MS: 500,
   COMMANDS: [
     {
+      command: 'status',
+      description: 'Get current status',
+    },
+    {
       command: 'me',
       description: 'User & chat info, service health',
     },

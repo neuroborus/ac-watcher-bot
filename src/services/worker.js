@@ -1,11 +1,11 @@
 const cron = require('node-cron');
-const ping = require('ping');
 const { sleep } = require('../utils/time');
+const logger = require('../utils/logger');
 const { HERE, PING_PATTERN} = require('../constants/watcher.constants');
 const { sendAlert } = require('./notifications');
 const telegram = require('./telegram.bot');
-const logger = require('../utils/logger');
-const { PINGING_HOST } = process.env;
+const { getAvailability } = require('./status');
+
 
 
 let previousStatus;
@@ -23,16 +23,16 @@ function startWorker () {
 
 
 async function penguin() {
-  const status = await ping.promise.probe(PINGING_HOST);
+  const isAvailable = await getAvailability();
 
-  console.trace('Current status -> ' + (status.alive ? 'on' : 'off'));
+  console.trace('Current status -> ' + (isAvailable ? 'on' : 'off'));
 
   if (previousStatus === undefined) {
-    previousStatus = status.alive;
-  } else if (status.alive !== previousStatus) {
-    previousStatus = status.alive;
+    previousStatus = isAvailable;
+  } else if (isAvailable !== previousStatus) {
+    previousStatus = isAvailable;
     console.trace('Notifying...');
-    await telegram.notifyAboutStatus(status.alive);
+    await telegram.notifyAboutStatus(isAvailable);
     console.trace('Notified!');
   }
 }

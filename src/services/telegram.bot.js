@@ -6,6 +6,7 @@ const { formHtmlTagsMessage,
 } = require('../utils/messages');
 const { sleep } = require('../utils/time');
 const filesystem = require('../utils/filesystem');
+const { isEligibleChat } = require('../utils/guard');
 const { ADMIN, USERS, GROUPS, PIN_STATUS_IN_GROUPS } = require('../constants/telegram.constants');
 const {
   TELEGRAM_BOT_TOKEN,
@@ -15,6 +16,11 @@ const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
 const me = (ctx) => ctx.reply(`PONG: user=${ctx?.from?.id} | chat=${ctx?.update?.message?.chat?.id}`);
 
 const sendLogFile = async (layer, ctx) => {
+  const chat = ctx?.update?.message?.chat?.id;
+  if (!isEligibleChat(chat)) {
+    console.warn('Actions from not an eligible chat -> ' + chat);
+    return;
+  }
   if (ctx?.from?.id !== ADMIN) {
     await ctx.reply('You are not an admin!');
     return;
@@ -33,6 +39,21 @@ const warn = async (ctx) => await sendLogFile('warn', ctx);
 const error = async (ctx) => await sendLogFile('error', ctx);
 const logs = async (ctx) => await sendLogFile('logs', ctx);
 
+const status = async (ctx) => {
+  const chat = ctx?.update?.message?.chat?.id;
+  if (!isEligibleChat(chat)) {
+    console.warn('Actions from not an eligible chat -> ' + chat);
+    return;
+  }
+  const msg = formNotify(status);
+  if (GROUPS.includes(chat)) {
+    await notifyGroup(msg, chat)
+  }
+  if (USERS.includes(chat)) {
+    await sendMessage(msg, chat, { disable_notification: true });
+  }
+};
+
 bot.start(me);
 bot.command('me', me);
 
@@ -42,6 +63,8 @@ bot.command('info', info);
 bot.command('warn', warn);
 bot.command('error', error);
 bot.command('logs', logs);
+
+bot.command('status', status);
 
 
 function startBot () {
@@ -180,15 +203,20 @@ async function notifyAboutStatus (status) {
   }
 
   for (const group of GROUPS) {
-    const prevMsgId = previousGroupsMessages.get(group);
-    const newMsgId = await sendMessage(msg, group, { disable_notification: true });
-    if (prevMsgId) await deleteMessageWithRetries(prevMsgId, group);
-    previousGroupsMessages.set(group, newMsgId);
-    if (PIN_STATUS_IN_GROUPS) {
-      await pinMessageWithRetries(newMsgId, group, { disable_notification: true });
-    }
+    await notifyGroup(msg, group);
   }
 }
+
+async function notifyGroup(msg, groupId) {
+  const prevMsgId = previousGroupsMessages.get(groupId);
+  const newMsgId = await sendMessage(msg, groupId, { disable_notification: true });
+  if (prevMsgId) await deleteMessageWithRetries(prevMsgId, groupId);
+  previousGroupsMessages.set(groupId, newMsgId);
+  if (PIN_STATUS_IN_GROUPS) {
+    await pinMessageWithRetries(newMsgId, groupId, { disable_notification: true });
+  }
+}
+
 
 
 
