@@ -26,8 +26,11 @@ function startWorker () {
 async function penguin() {
   const status = await ping.promise.probe(PINGING_HOST);
 
-  console.trace('Current status -> ' + (status ? 'on' : 'off'));
-  if (status.alive !== previousStatus) {
+  console.trace('Current status -> ' + (status.alive ? 'on' : 'off'));
+
+  if (previousStatus === undefined) {
+    previousStatus = status.alive;
+  } else if (status.alive !== previousStatus) {
     previousStatus = status.alive;
     console.trace('Notifying...');
     await notifyAboutStatus(status.alive);
@@ -39,7 +42,7 @@ async function clearLogFiles() {
   if (isClearingLogFiles) {
     console.warn(
       new Date().toISOString() +
-      ': processLogs() -=> skip: already processing!'
+      ': clearLogFiles() -=> skip: already processing!'
     );
     return;
   }

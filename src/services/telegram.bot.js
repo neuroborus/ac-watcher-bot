@@ -166,7 +166,7 @@ async function notifyAboutStatus (status) {
     const prevMsgId = previousGroupsMessages.get(group);
     const newMsgId = await sendMessage(msg, group, { disable_notification: true });
     if (prevMsgId) await deleteMessageWithRetries(prevMsgId, group);
-    if (newMsgId) previousGroupsMessages.set(group, newMsgId);
+    previousGroupsMessages.set(group, newMsgId);
   }
 }
 

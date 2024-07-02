@@ -7,7 +7,7 @@ function createFilePath(filename) {
 }
 
 function getLogsPath(level) {
-  const path = join(tmpdir(), 'retranslator-logs');
+  const path = join(tmpdir(), 'ac-watcher-logs');
   syncPath(path);
   return join(path, `${level}.log`);
 }
