@@ -2,7 +2,7 @@ const {mongoose} = require('mongoose');
 const {MONGO_URL, HISTORY_TTL} = require("./configs/mongo.config");
 
 const history = new mongoose.Schema({
-    createdAt: { type: Date, expires: HISTORY_TTL, default: new Date() , index: true },
+    createdAt: { type: Date, expires: HISTORY_TTL, default: Date.now() , index: true },
     isAvailable: { type: Boolean },
 });
 

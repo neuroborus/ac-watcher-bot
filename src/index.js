@@ -11,9 +11,11 @@ const {
 const logger = require('./utils/logger');
 const { MONGO_CONNECTED } = require('./configs/mongo.config');
 const { connectMongo } = require('./mongo');
+const {plot} = require("./services/graph-plotter");
 //
 
 async function start () {
+  await plot();
   await logger.inject();
   startBot();
   if (MONGO_CONNECTED) await connectMongo();

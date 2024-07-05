@@ -1,12 +1,14 @@
 const cron = require('node-cron');
-const { sleep } = require('../utils/time');
+const { sleep, weekInMs, maximizeDate, daysInMonth, daysInMs } = require('../utils/time');
 const logger = require('../utils/logger');
-const { HERE, PING_PATTERN} = require('../configs/watcher.config');
+const { HERE, PING_PATTERN, EVERY_WEEK_PATTERN, EVERY_MONTH_PATTERN} = require('../configs/watcher.config');
 const { sendAlert } = require('./notifications');
 const telegram = require('./telegram.bot');
 const { getAvailability } = require('./status');
-const {MONGO_CONNECTED} = require("../configs/mongo.config");
-const {History} = require("../mongo");
+const { MONGO_CONNECTED } = require('../configs/mongo.config');
+const { History } = require('../mongo');
+const { writeGraphData } = require('./graph-processor');
+const { plot } = require('./graph-plotter');
 
 
 
@@ -19,28 +21,67 @@ function startWorker() {
   cron.schedule(PING_PATTERN, async () => {
     await penguin();
   });
-  cron.schedule('0 0 * * 0', async () => {
+
+  let date = new Date(Date.now() - 1000 * 60 * 5);
+  sendStatistics(
+      'week',
+      maximizeDate(date)
+  );
+
+  cron.schedule(EVERY_WEEK_PATTERN, async () => {
     await clearLogFiles();
+    let date = new Date(Date.now() - 1000 * 60 * 5);
+    await sendStatistics(
+        'week',
+        maximizeDate(date)
+        );
+  });
+  cron.schedule(EVERY_MONTH_PATTERN, async () => {
+    await sleep(10000);
+    let date = new Date(Date.now() - 1000 * 60 * 5);
+    await sendStatistics(
+        'month',
+        maximizeDate(date)
+        );
   });
 }
 
-async function checkPreviousStatus() {
-  let status;
-  if ( previousStatus === undefined && MONGO_CONNECTED ) {
-    const obj = await History.findOne().sort({ createdAt: -1 });
-    status = obj?.isAvailable;
-  } else {
-    status = previousStatus;
+async function sendStatistics(type, now) {
+  try {
+    let gte;
+    const lte = now.getTime();
+    switch (type) {
+      case 'week':
+        gte = lte - weekInMs;
+        break;
+      case 'month':
+        const date = new Date(lte);
+        const days = daysInMonth(date.getMonth(), date.getFullYear());
+        gte = lte - daysInMs(days);
+        break;
+      default:
+        return;
+    }
+
+    const rawData = await History.find(
+        {
+          createdAt: {
+            "$gte": gte,
+            "$lte": lte
+          }
+        }
+    );
+
+    const dataUrl = writeGraphData(rawData, type);
+    const file = await plot(dataUrl, type);
+    await telegram.fileToChannel(`${type}.svg`, file); // TODO: sending as image
+  } catch (err) {
+    console.error(err);
   }
-  return status;
 }
 
-async function sendToDbIfEnabled(isAvailable) {
-  if (MONGO_CONNECTED) {
-    await History.create({isAvailable});
-    console.trace('Sent to db!');
-  }
-}
+
+/////////////////////////////
 
 async function penguin() {
   if (isPenguining) {
@@ -71,6 +112,26 @@ async function penguin() {
   }
   isPenguining = false;
 }
+
+async function checkPreviousStatus() {
+  let status;
+  if ( previousStatus === undefined && MONGO_CONNECTED ) {
+    const obj = await History.findOne().sort({ createdAt: -1 });
+    status = obj?.isAvailable;
+  } else {
+    status = previousStatus;
+  }
+  return status;
+}
+
+async function sendToDbIfEnabled(isAvailable) {
+  if (MONGO_CONNECTED) {
+    await History.create({isAvailable});
+    console.trace('Sent to db!');
+  }
+}
+
+///////////////////////////////////
 
 async function clearLogFiles() {
   if (isClearingLogFiles) {

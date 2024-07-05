@@ -174,6 +174,27 @@ async function pinMessageWithRetries (msgId, chatId, options = {}, attempt = 0) 
   }
 }
 
+async function sendFileWithRetries (filename, filepath, chatId, attempt = 0) {
+  if (attempt <= telegram.RETRIES) {
+    try {
+      await sleep(telegram.REQUESTS_PAUSE_MS);
+      const document = {
+        source: filepath,
+        filename
+      };
+      await bot.telegram.sendDocument(chatId, document);
+    } catch (e) {
+      await alertAdmin(
+          `sendFileWithRetries [${filename}][${attempt}/${
+              telegram.RETRIES
+          }] => ` + e,
+          'sendFileWithRetries',
+      );
+      await sendFileWithRetries(filename, filepath, chatId, attempt + 1);
+    }
+  }
+}
+
 
 /////////////////////////////// WRAPPERS
 
@@ -193,6 +214,10 @@ async function alertAdmin (what, where, level, logUrl) {
       telegram.ADMIN,
     { disable_notification: false }
   );
+}
+
+async function fileToChannel (filename, filepath) {
+  await sendFileWithRetries(filename, filepath, telegram.CHANNEL);
 }
 
 ////////////////////////////// Notifications
@@ -296,5 +321,6 @@ module.exports = {
   infoAdmin,
   alertAdmin,
   sendLogFile,
-  notifyAboutStatus
+  notifyAboutStatus,
+  fileToChannel
 };
