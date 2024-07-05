@@ -48,7 +48,6 @@ jobs:
           echo "IS_PIN_STATUS_IN_GROUPS=$IS_PIN_STATUS_IN_GROUPS" >> .env
           echo "IS_MONGO_CONNECTED=$IS_MONGO_CONNECTED" >> .env
           echo "MONGO_URL=$MONGO_URL" >> .env
-          
           echo "PINGING_HOST=$PINGING_HOST" >> .env
           echo "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN" >> .env
           echo "MONGO_URL=$MONGO_URL" >> .env
