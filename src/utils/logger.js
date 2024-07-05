@@ -1,6 +1,5 @@
 const fs = require ('fs');
-const { getLogsPath
-} = require('./filesystem');
+const { getLogsPath } = require('./filesystem');
 
 let traceFile;
 let debugFile;
@@ -20,27 +19,27 @@ function refineMessage(msg, layer = '') {
 function runStreams() {
   traceFile = fs.createWriteStream(
       getLogsPath('trace'),
-      {flags : 'w'}
+      {flags : 'a'}
     );
   debugFile = fs.createWriteStream(
     getLogsPath('debug'),
-      {flags : 'w'}
+      {flags : 'a'}
     );
   infoFile = fs.createWriteStream(
     getLogsPath('info'),
-    {flags : 'w'}
+    {flags : 'a'}
   );
   warnFile = fs.createWriteStream(
     getLogsPath('warn'),
-    {flags : 'w'}
+    {flags : 'a'}
   );
   errorFile = fs.createWriteStream(
     getLogsPath('error'),
-    {flags : 'w'}
+    {flags : 'a'}
   );
   logsFile = fs.createWriteStream(
     getLogsPath('logs'),
-    {flags : 'w'}
+    {flags : 'a'}
   );
 }
 

@@ -233,7 +233,7 @@ async function groupMiddleware (ctx, next) {
     const currentChatId = ctx?.update?.message?.chat?.id;
     if (currentChatId && currentChatId < 0) {
       // If chat is group
-      if (!telegram.GROUPS.includes(currentChatId)) {
+      if (telegram.CHANNEL !== currentChatId && !telegram.GROUPS.includes(currentChatId)) {
         // if is not our group
         await ctx.leaveChat();
       } else {

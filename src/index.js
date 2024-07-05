@@ -9,11 +9,14 @@ const {
   sendInfo
 } = require('./services/notifications');
 const logger = require('./utils/logger');
+const { MONGO_CONNECTED } = require('./configs/mongo.config');
+const { connectMongo } = require('./mongo');
 //
 
 async function start () {
   await logger.inject();
   startBot();
+  if (MONGO_CONNECTED) await connectMongo();
   await sendInfo('Started!', HERE);
   startWorker();
 }

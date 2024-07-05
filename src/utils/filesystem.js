@@ -6,10 +6,10 @@ function createFilePath(filename) {
   return join(tmpdir(), filename);
 }
 
-function getLogsPath(level) {
+function getLogsPath(level, extension = 'log') {
   const path = join(tmpdir(), 'ac-watcher-logs');
   syncPath(path);
-  return join(path, `${level}.log`);
+  return join(path, `${level}.${extension}`);
 }
 
 function syncPath(path) {

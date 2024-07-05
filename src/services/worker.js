@@ -5,13 +5,16 @@ const { HERE, PING_PATTERN} = require('../configs/watcher.config');
 const { sendAlert } = require('./notifications');
 const telegram = require('./telegram.bot');
 const { getAvailability } = require('./status');
+const {MONGO_CONNECTED} = require("../configs/mongo.config");
+const {History} = require("../mongo");
 
 
 
 let previousStatus;
 let isClearingLogFiles = false;
+let isPenguining = false;
 
-function startWorker () {
+function startWorker() {
   console.log('Worker started!');
   cron.schedule(PING_PATTERN, async () => {
     await penguin();
@@ -21,27 +24,58 @@ function startWorker () {
   });
 }
 
+async function checkPreviousStatus() {
+  let status;
+  if ( previousStatus === undefined && MONGO_CONNECTED ) {
+    const obj = await History.findOne().sort({ createdAt: -1 });
+    status = obj?.isAvailable;
+  } else {
+    status = previousStatus;
+  }
+  return status;
+}
+
+async function sendToDbIfEnabled(isAvailable) {
+  if (MONGO_CONNECTED) {
+    await History.create({isAvailable});
+    console.trace('Sent to db!');
+  }
+}
 
 async function penguin() {
-  const isAvailable = await getAvailability();
-
-  console.trace('Current status -> ' + (isAvailable ? 'on' : 'off'));
-
-  if (previousStatus === undefined) {
-    previousStatus = isAvailable;
-  } else if (isAvailable !== previousStatus) {
-    previousStatus = isAvailable;
-    console.trace('Notifying...');
-    await telegram.notifyAboutStatus(isAvailable);
-    console.trace('Notified!');
+  if (isPenguining) {
+    console.warn('penguin is already running!');
+    return;
   }
+  isPenguining = true;
+  try {
+    const isAvailable = await getAvailability();
+
+    console.trace('Current status -> ' + (isAvailable ? 'on' : 'off'));
+
+    const previous = await checkPreviousStatus();
+
+    if (previous === undefined) {
+      previousStatus = isAvailable;
+      await sendToDbIfEnabled(isAvailable)
+      console.trace('Sent to db!');
+    } else if (isAvailable !== previous) {
+      previousStatus = isAvailable;
+      console.trace('Notifying...');
+      await telegram.notifyAboutStatus(isAvailable);
+      console.trace('Notified!');
+      await sendToDbIfEnabled(isAvailable)
+    }
+  } catch (err) {
+    console.error(err);
+  }
+  isPenguining = false;
 }
 
 async function clearLogFiles() {
   if (isClearingLogFiles) {
     console.warn(
-      new Date().toISOString() +
-      ': clearLogFiles() -=> skip: already processing!'
+      'clearLogFiles() -=> skip: already processing!'
     );
     return;
   }
