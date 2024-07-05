@@ -1,7 +1,7 @@
 const dotenv = require('dotenv');
 dotenv.config();
 
-const { HERE } = require('./constants/watcher.constants');
+const { HERE } = require('./configs/watcher.config');
 const { startBot } = require('./services/telegram.bot');
 const { startWorker } = require('./services/worker');
 const {

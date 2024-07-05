@@ -1,13 +1,10 @@
 const { Telegraf } = require('telegraf');
 const fs = require('fs');
-const tgConstants = require('../constants/telegram.constants');
-const { formHtmlTagsMessage,
-  addEmojiPrefix, formNotify
-} = require('../utils/messages');
+const telegram = require('../configs/telegram.config');
+const { formHtmlTagsMessage, addEmojiPrefix, formNotify } = require('../utils/messages');
 const { sleep } = require('../utils/time');
 const filesystem = require('../utils/filesystem');
 const { isEligibleChat } = require('../utils/guard');
-const { ADMIN, USERS, GROUPS, PIN_STATUS_IN_GROUPS, RETRIES, RETRY_DELAY_MS} = require('../constants/telegram.constants');
 const {
   TELEGRAM_BOT_TOKEN,
 } = process.env;
@@ -23,7 +20,7 @@ const sendLogFile = async (layer, ctx) => {
     console.warn('Actions from not an eligible chat -> ' + chat);
     return;
   }
-  if (ctx?.from?.id !== ADMIN) {
+  if (ctx?.from?.id !== telegram.ADMIN) {
     await ctx.reply('You are not an admin!');
     return;
   }
@@ -49,11 +46,11 @@ const status = async (ctx) => {
   }
   if (isNotifying) ctx.reply('Try later. Notifying...')
   const msg = formNotify(status);
-  if (GROUPS.includes(chat)) {
+  if (telegram.GROUPS.includes(chat)) {
     console.trace('Sending status to group ' + chat);
     await notifyGroup(msg, chat)
   }
-  if (ADMIN === chat || USERS.includes(chat)) {
+  if (telegram.ADMIN === chat || telegram.USERS.includes(chat)) {
     console.trace('Sending status to user ' + chat);
     await sendMessage(msg, chat, { disable_notification: true });
   }
@@ -77,7 +74,7 @@ function startBot () {
   bot.catch(async (err, ctx) => {
     console.error('Telegram bot caught error -> ' + err);
   });
-  bot.telegram.setMyCommands(tgConstants.COMMANDS)
+  bot.telegram.setMyCommands(telegram.COMMANDS)
     .catch(e => console.error(e));
   bot.launch()
     .then(r => console.log('Bot started!'))
@@ -93,8 +90,8 @@ async function sendMessage (msg, recipient, options = {}, attempt = 0) {
   let message;
 
   try {
-    await sleep(tgConstants.REQUESTS_PAUSE_MS);
-    if (tgConstants.MAX_MSG_SIZE <= msg.length) {
+    await sleep(telegram.REQUESTS_PAUSE_MS);
+    if (telegram.MAX_MSG_SIZE <= msg.length) {
       isSizeWell = false;
       const prefix = options?.disable_notification ? 'ERROR__' : 'FATAL__';
       const filename = prefix + new Date().toISOString() + '.html';
@@ -120,12 +117,12 @@ async function sendMessage (msg, recipient, options = {}, attempt = 0) {
     } catch (e) {
       console.error(
           `[${recipient}] ` +
-        `[${attempt}/${tgConstants.RETRIES}] Sending message: ${e}`
+        `[${attempt}/${telegram.RETRIES}] Sending message: ${e}`
       );
-      if (attempt < tgConstants.RETRIES) {
+      if (attempt < telegram.RETRIES) {
         setTimeout(async () => {
           await sendMessage(msg, recipient, options, attempt + 1);
-        }, tgConstants.RETRY_DELAY_MS);
+        }, telegram.RETRY_DELAY_MS);
       }
     }
 
@@ -144,14 +141,14 @@ async function sendMessage (msg, recipient, options = {}, attempt = 0) {
 
 
 async function deleteMessageWithRetries (msgId, chatId, attempt = 0) {
-  if (attempt <= tgConstants.RETRIES) {
+  if (attempt <= telegram.RETRIES) {
     try {
-      await sleep(tgConstants.REQUESTS_PAUSE_MS);
+      await sleep(telegram.REQUESTS_PAUSE_MS);
       await bot.telegram.deleteMessage(chatId, msgId);
     } catch (e) {
       await alertAdmin(
           `deleteMessageWithRetries [${msgId}][${attempt}/${
-              tgConstants.RETRIES
+              telegram.RETRIES
           }] => ` + e,
           'deleteMessageWithRetries',
       );
@@ -161,14 +158,14 @@ async function deleteMessageWithRetries (msgId, chatId, attempt = 0) {
 }
 
 async function pinMessageWithRetries (msgId, chatId, options = {}, attempt = 0) {
-  if (attempt <= tgConstants.RETRIES) {
+  if (attempt <= telegram.RETRIES) {
     try {
-      await sleep(tgConstants.REQUESTS_PAUSE_MS);
+      await sleep(telegram.REQUESTS_PAUSE_MS);
       await bot.telegram.pinChatMessage(chatId, msgId, options);
     } catch (e) {
       await alertAdmin(
           `pinMessageWithRetries [${msgId}][${attempt}/${
-              tgConstants.RETRIES
+              telegram.RETRIES
           }] => ` + e,
           'pinMessageWithRetries',
       );
@@ -184,7 +181,7 @@ async function infoAdmin (what, where, level, logUrl) {
   const msg = formHtmlTagsMessage(where, what, level, logUrl);
   await sendMessage(
     addEmojiPrefix(msg,  level, false),
-      ADMIN,
+      telegram.ADMIN,
     { disable_notification: true }
   );
 }
@@ -193,7 +190,7 @@ async function alertAdmin (what, where, level, logUrl) {
   const msg = formHtmlTagsMessage(where, what, level, logUrl);
   await sendMessage(
     addEmojiPrefix(msg, level, true),
-      ADMIN,
+      telegram.ADMIN,
     { disable_notification: false }
   );
 }
@@ -203,14 +200,16 @@ let isNotifying = false; // It is not a singleton!
 let previousGroupsMessages = new Map(); // groupId - messageID
 async function notifyAboutStatus (status) {
   isNotifying = true;
-  const users = [ADMIN, ...USERS];
 
   const msg = formNotify(status);
-  for (const user of users) {
-    await sendMessage(msg, user, { disable_notification: true });
+  if (telegram.NOTIFY_ADMIN) {
+    await sendMessage(msg, telegram.ADMIN, {disable_notification: telegram.ADMIN_NOTIFY_WITH_SOUND});
   }
-
-  for (const group of GROUPS) {
+  await sendMessage(msg, telegram.CHANNEL, { disable_notification: telegram.CHANNEL_NOTIFY_WITH_SOUND });
+  for (const user of telegram.USERS) {
+    await sendMessage(msg, user, { disable_notification: telegram.USERS_NOTIFY_WITH_SOUND });
+  }
+  for (const group of telegram.GROUPS) {
     await notifyGroup(msg, group);
   }
   isNotifying = false;
@@ -221,7 +220,7 @@ async function notifyGroup(msg, groupId) {
   const newMsgId = await sendMessage(msg, groupId, { disable_notification: true });
   if (prevMsgId) await deleteMessageWithRetries(prevMsgId, groupId);
   previousGroupsMessages.set(groupId, newMsgId);
-  if (PIN_STATUS_IN_GROUPS) {
+  if (telegram.PIN_STATUS_IN_GROUPS) {
     await pinMessageWithRetries(newMsgId, groupId, { disable_notification: true });
   }
 }
@@ -234,7 +233,7 @@ async function groupMiddleware (ctx, next) {
     const currentChatId = ctx?.update?.message?.chat?.id;
     if (currentChatId && currentChatId < 0) {
       // If chat is group
-      if (!GROUPS.includes(currentChatId)) {
+      if (!telegram.GROUPS.includes(currentChatId)) {
         // if is not our group
         await ctx.leaveChat();
       } else {
@@ -273,10 +272,10 @@ const deleteActionWithRetries = async (message, attempt = 0) => {
       console.error(
           message?.from?.id + ' ' +
           `deleteActionWithRetries [${attempt}/${
-              RETRIES
+              telegram.RETRIES
           }] => ` + e
       );
-      await sleep(RETRY_DELAY_MS);
+      await sleep(telegram.RETRY_DELAY_MS);
       await deleteActionWithRetries(message, attempt + 1);
     }
   } else {

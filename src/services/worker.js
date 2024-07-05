@@ -1,7 +1,7 @@
 const cron = require('node-cron');
 const { sleep } = require('../utils/time');
 const logger = require('../utils/logger');
-const { HERE, PING_PATTERN} = require('../constants/watcher.constants');
+const { HERE, PING_PATTERN} = require('../configs/watcher.config');
 const { sendAlert } = require('./notifications');
 const telegram = require('./telegram.bot');
 const { getAvailability } = require('./status');
