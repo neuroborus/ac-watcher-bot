@@ -1,27 +1,28 @@
 const dotenv = require('dotenv');
 dotenv.config();
 
-const { HERE } = require('./configs/watcher.config');
-const { startBot } = require('./services/telegram.bot');
-const { startWorker } = require('./services/worker');
+const {HERE} = require('./configs/watcher.config');
+const {startBot} = require('./services/telegram.bot');
+const {startWorker} = require('./services/worker');
 const {
-  sendAlert,
-  sendInfo
+    sendAlert,
+    sendInfo
 } = require('./services/notifications');
 const logger = require('./utils/logger');
-const { MONGO_CONNECTED } = require('./configs/mongo.config');
-const { connectMongo } = require('./mongo');
+const {MONGO_CONNECTED} = require('./configs/mongo.config');
+const {connectMongo} = require('./mongo');
+
 //
 
-async function start () {
-  await logger.inject();
-  startBot();
-  if (MONGO_CONNECTED) await connectMongo();
-  await sendInfo('Started!', HERE);
-  startWorker();
+async function start() {
+    await logger.inject();
+    startBot();
+    if (MONGO_CONNECTED) await connectMongo();
+    await sendInfo('Started!', HERE);
+    startWorker();
 }
 
 start().catch(e => {
-  console.error(e);
-  sendAlert(HERE, e).then(r => r);
+    console.error(e);
+    sendAlert(HERE, e).then(r => r);
 });

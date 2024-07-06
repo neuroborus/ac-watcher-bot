@@ -17,5 +17,10 @@
     "telegraf": "^4.15.3",
     "vega": "^5.30.0",
     "vega-lite": "^5.19.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.6.0",
+    "eslint": "^9.6.0",
+    "globals": "^15.8.0"
   }
 }

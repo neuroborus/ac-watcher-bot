@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const vegaLite = require('vega-lite');
 const vega = require('vega');
 const sharp = require('sharp');
-const { getGraphPath } = require('../utils/filesystem');
+const {getGraphPath} = require('../utils/filesystem');
 
 const vegaSpecV5URL = "file:///../resources/vega-spec-v5.json";
 
@@ -91,7 +91,6 @@ async function plot(dataUrl, type) {
 
     const pathPng = getGraphPath(type, 'png');
     await png.toFile(pathPng);
-
 
 
     return pathPng;

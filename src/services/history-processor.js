@@ -1,7 +1,7 @@
-const { maximizeDate, weekInMs} = require('../utils/time');
-const { getGraphDataPath, pathToUrl} = require('../utils/filesystem');
-const { writeFileSync } = require('node:fs');
-const {TIME_EPSILON} = require("../configs/history.config");
+const {writeFileSync} = require('node:fs');
+const {maximizeDate, weekInMs} = require('../utils/time');
+const {getGraphDataPath, pathToUrl} = require('../utils/filesystem');
+const {TIME_EPSILON} = require('../configs/history.config');
 
 function processData(sortedAscData) {
     const result = sortedAscData.reduce((acc, cur, i) => {
@@ -11,15 +11,15 @@ function processData(sortedAscData) {
         })
 
         if (i > 0) {
-            if (sortedAscData[i-1].createdAt.getDate() < cur.createdAt.getDate()) {
-                acc[i-1].end = maximizeDate(acc[i-1].start);
+            if (sortedAscData[i - 1].createdAt.getDate() < cur.createdAt.getDate()) {
+                acc[i - 1].end = maximizeDate(acc[i - 1].start);
             } else {
-                acc[i-1].end = cur.createdAt;
+                acc[i - 1].end = cur.createdAt;
             }
         }
         return acc;
     }, []);
-    result[result.length-1].end = maximizeDate(result[result.length-1].start);
+    result[result.length - 1].end = maximizeDate(result[result.length - 1].start);
 
     return result;
 }
@@ -34,8 +34,7 @@ function writeGraphData(rawSortedData, type) {
     return pathToUrl(file);
 }
 
-function checkForNextNearChanges(
-    changeDate, isAvailable) {
+function checkForNextNearChanges(changeDate, isAvailable) {
     let data;
     try {
         data = require(getGraphDataPath('week'));
@@ -48,7 +47,6 @@ function checkForNextNearChanges(
             new Date(el.start).getTime() - TIME_EPSILON < changeDate.getTime() - weekInMs &&
             new Date(el.end).getTime() + TIME_EPSILON > changeDate.getTime() - weekInMs;
     });
-
     if (!templateEl) return null;
 
     return new Date(templateEl.end);
