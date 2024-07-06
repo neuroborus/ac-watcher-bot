@@ -5,6 +5,7 @@ const { formHtmlTagsMessage, addEmojiPrefix, formNotify } = require('../utils/me
 const { sleep } = require('../utils/time');
 const filesystem = require('../utils/filesystem');
 const { isEligibleChat } = require('../utils/guard');
+const { checkForNextNearChanges } = require('./history-processor');
 const {
   TELEGRAM_BOT_TOKEN,
 } = process.env;
@@ -29,7 +30,7 @@ const sendLogFile = async (layer, ctx) => {
     source: filesystem.getLogsPath(layer),
     filename: layer + '.log',
   }
-  await bot.telegram.sendDocument(ctx.from.id, document);
+  await bot.telegram.sendDocument(chat, document);
 };
 const trace = async (ctx) => await sendLogFile('trace', ctx);
 const debug = async (ctx) => await sendLogFile('debug', ctx);
@@ -44,8 +45,9 @@ const status = async (ctx) => {
     console.warn('Actions from not an eligible chat -> ' + chat);
     return;
   }
-  if (isNotifying) ctx.reply('Try later. Notifying...')
-  const msg = formNotify(status);
+
+  if (isNotifying || previousStatus === 'undefined') ctx.reply('Try later...')
+  const msg = formNotify(previousStatus, checkForNextNearChanges(new Date(), previousStatus));
   if (telegram.GROUPS.includes(chat)) {
     console.trace('Sending status to group ' + chat);
     await notifyGroup(msg, chat)
@@ -244,10 +246,12 @@ async function photoToChannel (filepath) {
 ////////////////////////////// Notifications
 let isNotifying = false; // It is not a singleton!
 let previousGroupsMessages = new Map(); // groupId - messageID
+let previousStatus;
 async function notifyAboutStatus (status) {
   isNotifying = true;
 
-  const msg = formNotify(status);
+  previousStatus = status;
+  const msg = formNotify(status, checkForNextNearChanges(new Date(), status));
   if (telegram.NOTIFY_ADMIN) {
     await sendMessage(msg, telegram.ADMIN, {disable_notification: telegram.ADMIN_NOTIFY_WITH_SOUND});
   }

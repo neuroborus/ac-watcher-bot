@@ -1,4 +1,5 @@
 const { isObservedLevel } = require('./levels');
+const { TIMEZONE } = require('../configs/history.config');
 
 function formHtmlTagsMessage (where, what, level, logUrl = '') {
   return `<b>#${level}-#${where}:</b> ${what}`
@@ -25,11 +26,21 @@ function addEmojiPrefix(text, level, isAlert = false) {
   }
 }
 
-function formNotify(isOn) {
+function formNotify(isOn, nextNearChange = null) {
+  let notify;
   if (isOn) {
-    return '🟢 <b>CONNECTION IS #ESTABLISHED</b>';
+    notify = '🟢 <b>CONNECTION IS #ESTABLISHED</b>';
+  } else {
+    notify = '🔴 <b>CONNECTION IS #LOST</b>';
   }
-  return '🔴 <b>CONNECTION IS #LOST</b>';
+
+  if (nextNearChange) {
+    notify +=
+        `\n⏳ <i>The next #${isOn ? 'lost' : 'reinstatement'} is expected at approximately:` +
+        `\n<u>${nextNearChange.toLocaleString('en-GB', { timeZone: TIMEZONE })}</u>` +
+        `\t(${TIMEZONE})</i>`;
+  }
+  return notify;
 }
 
 module.exports = {

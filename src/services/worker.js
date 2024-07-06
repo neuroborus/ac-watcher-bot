@@ -7,7 +7,7 @@ const telegram = require('./telegram.bot');
 const { getAvailability } = require('./status');
 const { MONGO_CONNECTED } = require('../configs/mongo.config');
 const { History } = require('../mongo');
-const { writeGraphData } = require('./graph-processor');
+const { writeGraphData } = require('./history-processor');
 const { plot } = require('./graph-plotter');
 
 

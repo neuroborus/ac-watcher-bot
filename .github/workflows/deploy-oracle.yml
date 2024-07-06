@@ -31,6 +31,7 @@ jobs:
           IS_GROUPS_NOTIFY_WITH_SOUND: ${{ vars.IS_GROUPS_NOTIFY_WITH_SOUND }}
           IS_PIN_STATUS_IN_GROUPS: ${{ vars.IS_PIN_STATUS_IN_GROUPS }}
           IS_MONGO_CONNECTED: ${{ vars.IS_MONGO_CONNECTED }}
+          TZ: ${{ vars.TZ }}
 
           PINGING_HOST: ${{ secrets.PINGING_HOST }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -47,6 +48,7 @@ jobs:
           echo "IS_GROUPS_NOTIFY_WITH_SOUND=$IS_GROUPS_NOTIFY_WITH_SOUND" >> .env
           echo "IS_PIN_STATUS_IN_GROUPS=$IS_PIN_STATUS_IN_GROUPS" >> .env
           echo "IS_MONGO_CONNECTED=$IS_MONGO_CONNECTED" >> .env
+          echo "TZ=$TZ" >> .env
           echo "MONGO_URL=$MONGO_URL" >> .env
           echo "PINGING_HOST=$PINGING_HOST" >> .env
           echo "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN" >> .env
