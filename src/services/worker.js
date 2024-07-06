@@ -7,8 +7,7 @@ const telegram = require('./telegram.bot');
 const {getAvailability} = require('./status');
 const {MONGO_CONNECTED} = require('../configs/mongo.config');
 const {History} = require('../mongo');
-const {writeGraphData} = require('./history-processor');
-const {plot} = require('./graph-plotter');
+const {generateAndGetGraph} = require('./graph.service');
 
 
 let previousStatus;
@@ -23,7 +22,7 @@ function startWorker() {
     cron.schedule(EVERY_WEEK_PATTERN, async () => {
         await clearLogFiles();
         let date = new Date(Date.now() - 1000 * 60 * 5); // 5 minutes
-        await sendStatistics(
+        await sendGraphStatistics(
             'week',
             maximizeDate(date)
         );
@@ -31,41 +30,16 @@ function startWorker() {
     cron.schedule(EVERY_MONTH_PATTERN, async () => {
         await sleep(10000); // 10 sec
         let date = new Date(Date.now() - 1000 * 60 * 15); // 15 minutes
-        await sendStatistics(
+        await sendGraphStatistics(
             'month',
             maximizeDate(date)
         );
     });
 }
 
-async function sendStatistics(type, now) {
+async function sendGraphStatistics(type, nowDate) {
     try {
-        let gte;
-        const lte = now.getTime();
-        switch (type) {
-            case 'week':
-                gte = lte - weekInMs;
-                break;
-            case 'month':
-                const date = new Date(lte);
-                const days = daysInMonth(date.getMonth(), date.getFullYear());
-                gte = lte - daysInMs(days);
-                break;
-            default:
-                return;
-        }
-
-        const rawSortedData = await History.find(
-            {
-                createdAt: {
-                    "$gte": gte,
-                    "$lte": lte
-                }
-            }
-        ).sort({createdAt: 1});
-
-        const dataUrl = writeGraphData(rawSortedData, type);
-        const file = await plot(dataUrl, type);
+        const file = await generateAndGetGraph(type, nowDate)
         await telegram.photoToChannel(file);
     } catch (err) {
         console.error(err);

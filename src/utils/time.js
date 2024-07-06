@@ -4,12 +4,25 @@ async function sleep(ms) {
     });
 }
 
+function minimizeDate(date) {
+    const newDate = new Date(date); // copy object
+    newDate.setHours(0);
+    newDate.setMinutes(0);
+    newDate.setSeconds(1);
+    return newDate;
+}
+
 function maximizeDate(date) {
     const newDate = new Date(date); // copy object
     newDate.setHours(23);
     newDate.setMinutes(59);
     newDate.setSeconds(59);
-    newDate.setMilliseconds(999);
+    return newDate;
+}
+
+function plusMinute(date) {
+    const newDate = new Date(date); // copy object
+    newDate.setMinutes(date.getMinutes() + 1);
     return newDate;
 }
 
@@ -20,18 +33,11 @@ function daysInMonth(month, year) {
     return new Date(year, month, 0).getDate();
 }
 
-/*function dateToTimezone(date, targetTimezone) {
-  const enGB = date.toLocaleString('en-GB', { timeZone: targetTimezone });
-
-  const [dateStr, timeStr] = enGB.split(', ');
-  const [day, month, year] = dateStr.split('/');
-
-  return `${year}-${month}-${day}T${timeStr}`;
-}*/
-
 module.exports = {
     sleep,
     maximizeDate,
+    minimizeDate,
+    plusMinute,
     weekInMs,
     daysInMs,
     daysInMonth,

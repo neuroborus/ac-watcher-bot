@@ -18,10 +18,16 @@ function getGraphPath(type, extension = 'svg') {
     return join(path, `${type}.${extension}`);
 }
 
-function getGraphDataPath(type, extension = 'json') {
+function getHistoryDataPath(type, extension = 'json') {
     const path = join(tmpdir(), 'ac-watcher', 'graphs-data');
     syncPath(path);
     return join(path, `${type}.${extension}`);
+}
+
+function getTimezonedGraphDataPath(type, extension = 'json') {
+    const path = join(tmpdir(), 'ac-watcher', 'graphs-data');
+    syncPath(path);
+    return join(path, `${type}-tz.${extension}`);
 }
 
 function pathToUrl(path) {
@@ -39,7 +45,8 @@ module.exports = {
     createFilePath,
     getLogsPath,
     getGraphPath,
-    getGraphDataPath,
+    getGraphDataPath: getHistoryDataPath,
+    getTimezonedGraphDataPath,
     pathToUrl,
     syncPath,
 };

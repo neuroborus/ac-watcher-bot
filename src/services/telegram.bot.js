@@ -2,10 +2,11 @@ const {Telegraf} = require('telegraf');
 const fs = require('fs');
 const telegram = require('../configs/telegram.config');
 const {formHtmlTagsMessage, addEmojiPrefix, formNotify} = require('../utils/messages');
-const {sleep} = require('../utils/time');
+const {sleep, weekInMs, daysInMonth, daysInMs} = require('../utils/time');
 const filesystem = require('../utils/filesystem');
 const {isEligibleChat} = require('../utils/guard');
 const {checkForNextNearChanges} = require('./history-processor');
+const {generateAndGetGraph} = require('./graph.service');
 const {TELEGRAM_BOT_TOKEN} = process.env;
 
 
@@ -13,16 +14,25 @@ const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
 
 const me = (ctx) => ctx.reply(`PONG: user=${ctx?.from?.id} | chat=${ctx?.update?.message?.chat?.id}`);
 
-const sendLogFile = async (layer, ctx) => {
-    const chat = ctx?.update?.message?.chat?.id;
+const approveEligibleChat = (chat) => {
     if (!isEligibleChat(chat)) {
         console.warn('Actions from not an eligible chat -> ' + chat);
-        return;
+        return false;
     }
+    return true;
+}
+const approveAdminCommand = async (ctx, chat = null) => {
+    if (!chat) chat = ctx?.update?.message?.chat?.id;
+    if (!approveEligibleChat(chat)) return false;
     if (ctx?.from?.id !== telegram.ADMIN) {
         await ctx.reply('You are not an admin!');
-        return;
+        return false;
     }
+    return true;
+}
+const sendLogFile = async (layer, ctx) => {
+    const chat = ctx?.update?.message?.chat?.id;
+    if (!(await approveAdminCommand(ctx, chat))) return;
     layer = layer.toLowerCase();
     const document = {
         source: filesystem.getLogsPath(layer),
@@ -39,10 +49,7 @@ const logs = async (ctx) => await sendLogFile('logs', ctx);
 
 const status = async (ctx) => {
     const chat = ctx?.update?.message?.chat?.id;
-    if (!isEligibleChat(chat)) {
-        console.warn('Actions from not an eligible chat -> ' + chat);
-        return;
-    }
+    if (!approveEligibleChat(chat)) return;
 
     if (isNotifying || previousStatus === 'undefined') ctx.reply('Try later...')
     const msg = formNotify(previousStatus, checkForNextNearChanges(new Date(), previousStatus));
@@ -55,6 +62,16 @@ const status = async (ctx) => {
         await sendMessage(msg, chat, {disable_notification: true});
     }
 };
+const graph = async (ctx, type) => {
+    const chat = ctx?.update?.message?.chat?.id;
+    if (!(await approveAdminCommand(ctx, chat))) return;
+    const file = await generateAndGetGraph(type, new Date());
+    await sendPhotoWithRetries(file, chat);
+}
+const graphWeek = (ctx) => graph(ctx, 'week');
+const graphMonth = (ctx) => graph(ctx, 'month');
+
+
 
 bot.start(me);
 bot.command('me', me);
@@ -67,6 +84,9 @@ bot.command('error', error);
 bot.command('logs', logs);
 
 bot.command('status', status);
+bot.command('graph_week', graphWeek);
+bot.command('graph_month', graphMonth);
+
 
 
 function startBot() {
