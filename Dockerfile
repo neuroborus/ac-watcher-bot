@@ -3,6 +3,11 @@ WORKDIR /usr/src/app
 COPY . .
 COPY package*.json ./
 
+RUN apt-get update && apt-get install -y fontconfig
+ENV FONTCONFIG_PATH=/etc/fonts
+RUN mkdir -p /usr/share/fonts
+COPY --chown=node static/fonts /usr/share/fonts
+
 RUN npm ci
 
 CMD npm start
