@@ -1,9 +1,9 @@
-const { maximizeDate, dateToTimezone} = require('../utils/time');
+const { maximizeDate } = require('../utils/time');
 const { getGraphDataPath, pathToUrl} = require('../utils/filesystem');
 const { writeFileSync } = require('node:fs');
 
-function processData(data) {
-    const result = data.reduce((acc, cur, i) => {
+function processData(sortedAscData) {
+    const result = sortedAscData.reduce((acc, cur, i) => {
 
         acc.push({
             start: cur.createdAt,
@@ -11,7 +11,7 @@ function processData(data) {
         })
 
         if (i > 0) {
-            if (data[i-1].createdAt.getDate() < cur.createdAt.getDate()) {
+            if (sortedAscData[i-1].createdAt.getDate() < cur.createdAt.getDate()) {
                 acc[i-1].end = maximizeDate(acc[i-1].start);
             } else {
                 acc[i-1].end = cur.createdAt;
@@ -24,8 +24,8 @@ function processData(data) {
     return result;
 }
 
-function writeGraphData(rawData, type) {
-    const processedData = processData(rawData);
+function writeGraphData(rawSortedData, type) {
+    const processedData = processData(rawSortedData);
     const stringifiedData = JSON.stringify(processedData, null, '\t');
     const file = getGraphDataPath(type);
 

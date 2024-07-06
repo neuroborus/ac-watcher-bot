@@ -21,24 +21,17 @@ function startWorker() {
   cron.schedule(PING_PATTERN, async () => {
     await penguin();
   });
-
-  let date = new Date(Date.now() - 1000 * 60 * 5);
-  sendStatistics(
-      'week',
-      maximizeDate(date)
-  );
-
   cron.schedule(EVERY_WEEK_PATTERN, async () => {
     await clearLogFiles();
-    let date = new Date(Date.now() - 1000 * 60 * 5);
+    let date = new Date(Date.now() - 1000 * 60 * 5); // 5 minutes
     await sendStatistics(
         'week',
         maximizeDate(date)
         );
   });
   cron.schedule(EVERY_MONTH_PATTERN, async () => {
-    await sleep(10000);
-    let date = new Date(Date.now() - 1000 * 60 * 5);
+    await sleep(10000); // 10 sec
+    let date = new Date(Date.now() - 1000 * 60 * 15); // 15 minutes
     await sendStatistics(
         'month',
         maximizeDate(date)
@@ -63,18 +56,18 @@ async function sendStatistics(type, now) {
         return;
     }
 
-    const rawData = await History.find(
+    const rawSortedData = await History.find(
         {
           createdAt: {
             "$gte": gte,
             "$lte": lte
           }
         }
-    );
+    ).sort({ createdAt: 1 });
 
-    const dataUrl = writeGraphData(rawData, type);
+    const dataUrl = writeGraphData(rawSortedData, type);
     const file = await plot(dataUrl, type);
-    await telegram.fileToChannel(`${type}.svg`, file); // TODO: sending as image
+    await telegram.photoToChannel(file);
   } catch (err) {
     console.error(err);
   }

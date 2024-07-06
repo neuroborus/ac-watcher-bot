@@ -25,7 +25,7 @@ function getGraphDataPath(type, extension = 'json') {
 }
 
 function pathToUrl(path) {
-  return `file///${path}`;
+  return `file://${path}`;
 }
 
 function syncPath(path) {
