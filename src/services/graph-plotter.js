@@ -14,6 +14,7 @@ function createSpec(url, type) {
         },
         "title": {
             "text": `Power Status (last ${type.toUpperCase()})`,
+            "font": "DejaVu Sans",
             "fontSize": 20,
             "fontWeight": "bold",
             "anchor": "start"
@@ -39,7 +40,8 @@ function createSpec(url, type) {
         "mark": {
             "type": "bar",
             "stroke": "white",
-            "strokeWidth": 1
+            "strokeWidth": 1,
+            "opacity": 0.5
         },
         "width": 800,
         "height": 400,
@@ -50,7 +52,7 @@ function createSpec(url, type) {
                 "title": "Day of the Month",
                 "sort": "ascending",
                 "axis": {
-                    "labelAngle": 0,
+                    "labelAngle": type === "week" ? 0 : 45,
                     "format": "d",
                     "labelExpr": "datum.value"
                 }
@@ -68,7 +70,7 @@ function createSpec(url, type) {
             "color": {
                 "field": "powerStatus",
                 "type": "nominal",
-                "scale": {"range": ["#ffcccc", "#ccffcc"]},
+                "scale": {"range": ["#b22222", "#228b22"]},
                 "legend": {"title": "Power Status"}
             }
         }
