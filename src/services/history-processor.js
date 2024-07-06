@@ -1,5 +1,5 @@
 const {writeFileSync} = require('node:fs');
-const {maximizeDate, weekInMs, minimizeDate, plusMinute} = require('../utils/time');
+const {maximizeDate, weekInMs, minimizeDate} = require('../utils/time');
 const {getGraphDataPath, pathToUrl, getTimezonedGraphDataPath} = require('../utils/filesystem');
 const {TIME_EPSILON, LOCALE, TIMEZONE} = require('../configs/history.config');
 
@@ -23,7 +23,10 @@ function processData(sortedAscData) {
     }, []);
 
     result[0].start = minimizeDate(result[0].start);
-    result[result.length-1].end = new Date();
+    const nowDate = new Date();
+    let endBorder = maximizeDate(result[result.length-1].start);
+    endBorder = endBorder > nowDate ? nowDate : endBorder;
+    result[result.length-1].end = endBorder;
 
     return result;
 }

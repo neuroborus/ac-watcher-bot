@@ -14,7 +14,6 @@ function createSpec(url, type) {
         },
         "title": {
             "text": `Power Status (last ${type.toUpperCase()})`,
-            "font": "Consolas",
             "fontSize": 20,
             "fontWeight": "bold",
             "anchor": "start"
@@ -88,7 +87,7 @@ async function plot(dataUrl, type) {
     const pathSvg = getGraphPath(type, 'svg');
     fs.writeFileSync(pathSvg, image);
 
-    const sh = await sharp(pathSvg);
+    const sh = await sharp(pathSvg, { density: 300 });
     const png = await sh.png();
 
     const pathPng = getGraphPath(type, 'png');
