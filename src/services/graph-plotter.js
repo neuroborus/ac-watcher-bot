@@ -14,7 +14,7 @@ function createSpec(url, type) {
         },
         "title": {
             "text": `Power Status (last ${type.toUpperCase()})`,
-            "font": "DejaVu Sans",
+            "font": "Consolas",
             "fontSize": 20,
             "fontWeight": "bold",
             "anchor": "start"
