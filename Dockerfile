@@ -13,6 +13,7 @@ RUN apk update && apk add --no-cache fontconfig \
 WORKDIR /usr/src/app
 COPY --from=build /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/src ./src
+COPY --from=build /usr/src/app/.env ./
 # COPY --from=build /usr/src/app/scripts ./scripts
 
 CMD ["node", "./src/index.js"]
