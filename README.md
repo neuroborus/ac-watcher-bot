@@ -5,7 +5,7 @@ Provides ability to set up notifications about it in different ways.
 
 * Most features are available without database connection.
 
-# Basic Capabilities:
+# Basic Features:
 
 ## Tracking power `outages` or `reinstatement`:
 ![](./docs/message.png)
