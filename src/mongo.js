@@ -1,5 +1,7 @@
 const {mongoose} = require('mongoose');
-const {MONGO_URL, HISTORY_TTL} = require("./configs/mongo.config");
+const {MONGO_URL, HISTORY_TTL} = require('./configs/mongo.config');
+const {Mongo} = require('@telegraf/session/mongodb');
+const {session}  = require('telegraf');
 
 const history = new mongoose.Schema({
     createdAt: {type: Date, expires: HISTORY_TTL, default: Date.now, index: true},
@@ -21,7 +23,14 @@ async function connectMongo() {
     console.info("Mongo connected!")
 }
 
+const store = Mongo({ // todo: fix
+    url: MONGO_URL,
+    database: 'sessions',
+});
+const sessions = session({ store });
+
 module.exports = {
+    sessions,
     connectMongo,
     History,
     GroupMessage

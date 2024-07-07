@@ -1,10 +1,15 @@
 const mongo = require('../mongo');
-const {MONGO_CONNECTED} = require('../configs/mongo.config');
+const {MONGO_CONNECTED, MONGO_SESSIONS} = require('../configs/mongo.config');
 
 
 async function connectToMongo() {
     if (!MONGO_CONNECTED) return;
     await mongo.connectMongo();
+}
+
+function getSessions() {
+    if (!MONGO_CONNECTED || !MONGO_SESSIONS) return undefined;
+    return mongo.sessions;
 }
 
 // History
@@ -54,6 +59,7 @@ async function getGroupMessage(groupId) {
 
 module.exports = {
     connectToMongo,
+    getSessions,
     createHistory,
     getLastHistory,
     findHistoriesAsc,

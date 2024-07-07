@@ -9,6 +9,7 @@ const mongo = require('./mongo.service');
 const history = require('./history');
 
 const {MONGO_CONNECTED} = require('../configs/mongo.config');
+const {SAMPLE} = require('../configs/history.config');
 
 const WHERE = 'Worker';
 
@@ -26,7 +27,7 @@ function startWorker() {
         if (!MONGO_CONNECTED) return;
         let date = new Date(Date.now() - 1000 * 60 * 5); // 5 minutes
         await sendGraphStatistics(
-            'week',
+            SAMPLE.WEEK,
             time.maximizeDate(date)
         );
     });
@@ -35,7 +36,7 @@ function startWorker() {
         await time.sleep(10000); // 10 sec
         let date = new Date(Date.now() - 1000 * 60 * 15); // 15 minutes
         await sendGraphStatistics(
-            'month',
+            SAMPLE.MONTH,
             time.maximizeDate(date)
         );
     });

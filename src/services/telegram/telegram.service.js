@@ -12,11 +12,13 @@ const {checkForNextNearChanges} = require('../history/history-processor');
 
 
 function startBot() {
+    const sessions = mongo.getSessions();
+    if (sessions) bot.use(sessions);
     bot.use(middlewares.groupMiddleware);
     bot.catch(async (err, ctx) => {
         console.error('Telegram bot caught error -> ' + err);
     });
-    commands.initializeCommands();
+    commands.initializeCommands(bot);
     bot.telegram.setMyCommands(telegram.COMMANDS)
         .catch(e => console.error(e));
     bot.launch()

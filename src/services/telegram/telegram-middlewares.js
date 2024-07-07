@@ -13,7 +13,6 @@ async function groupMiddleware(ctx, next) {
                 if (!(await processPin(ctx))) {
                     // place for other middlewares
                 }
-                return;
             }
         }
     } catch (err) {
