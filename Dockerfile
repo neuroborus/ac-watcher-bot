@@ -11,6 +11,7 @@ RUN apk update && apk add --no-cache fontconfig \
     ttf-liberation && \
     rm -rf /var/cache/apk/*
 WORKDIR /usr/src/app
+COPY --from=build /usr/src/app/.env ./
 COPY --from=build /usr/src/app/package*.json ./
 COPY --from=build /usr/src/app/node_modules ./
 COPY --from=build /usr/src/app/src ./
