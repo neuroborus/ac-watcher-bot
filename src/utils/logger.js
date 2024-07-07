@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('node:fs');
 const {getLogsPath} = require('./filesystem');
 
 let traceFile;
@@ -12,8 +12,8 @@ function refineMessage(msg, layer = '') {
     layer = layer ? ' | ' + layer : '';
     return new Date().toISOString() +
         layer +
-        ' >>> ' + msg +
-        ' <<<\n';
+        ' >>>    ' + msg +
+        '    <<<\n';
 }
 
 function runStreams() {

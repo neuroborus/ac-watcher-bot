@@ -7,8 +7,9 @@ const guards = require('./telegram-guards');
 const service = require('./telegram.service');
 const methods = require('./telegram.methods');
 
-const {checkForNextNearChanges} = require('../history-processor');
-const {generateAndGetGraph} = require('../graph.service');
+const {checkForNextNearChanges} = require('../history/history-processor');
+const {generateAndGetGraph} = require('../history/history.service');
+const {MONGO_CONNECTED} = require("../../configs/mongo.config");
 
 
 const me = (ctx) => ctx.reply(`PONG: user=${ctx?.from?.id} | chat=${ctx?.update?.message?.chat?.id}`);
@@ -47,6 +48,10 @@ const status = async (ctx) => {
 const graph = async (ctx, type) => {
     const chat = ctx?.update?.message?.chat?.id;
     if (!(await guards.approveAdminCommand(ctx, chat))) return;
+    if (!MONGO_CONNECTED) {
+        await ctx.reply('MongoDB is not connected!');
+        return;
+    }
     const file = await generateAndGetGraph(type, new Date());
     await methods.sendPhotoWithRetries(file, chat);
 }

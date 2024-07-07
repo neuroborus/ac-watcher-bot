@@ -1,5 +1,5 @@
 const {bot} = require('./telegram-bot');
-const fs = require('fs');
+const fs = require('node:fs');
 const time = require('../../utils/time');
 const telegram = require('../../configs/telegram.config');
 const notifications = require('../../configs/notifications.config');

@@ -2,9 +2,9 @@ const fs = require('node:fs');
 const vegaLite = require('vega-lite');
 const vega = require('vega');
 const sharp = require('sharp');
-const {getGraphPath} = require('../utils/filesystem');
 
-const vegaSpecV5URL = "file:///../resources/vega-spec-v5.json";
+const {getGraphPath} = require('../../utils/filesystem');
+const vegaSpecV5URL = 'file:///../resources/vega-spec-v5.json';
 
 function createSpec(url, type) {
     return {
