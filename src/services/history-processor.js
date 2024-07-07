@@ -4,7 +4,7 @@ const {getGraphDataPath, pathToUrl, getTimezonedGraphDataPath} = require('../uti
 const {TIME_EPSILON, LOCALE, TIMEZONE} = require('../configs/history.config');
 
 function processData(sortedAscData) {
-    const result = sortedAscData.reduce((acc, cur, i) => {
+    const result = sortedAscData.reduce((acc, cur) => {
         const size = acc.length;
         const lastInd = size - 1;
         if (size > 0) {
