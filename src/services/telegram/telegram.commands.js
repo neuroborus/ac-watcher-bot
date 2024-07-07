@@ -35,6 +35,7 @@ function initializeCommands(bot) {
     const status = async (ctx) => {
         const chat = ctx?.update?.message?.chat?.id;
         if (!(await guards.approveEligibleChat(ctx, chat))) return;
+        console.trace(`[${chat}] Initiated sending status by user -> ${ctx?.from?.id}`);
 
         let previousStatus = state.getPreviousStatus() ?? (await mongo.getLastHistory()).isAvailable;
         if (state.getIsNotifying() || previousStatus === undefined) {
@@ -44,21 +45,25 @@ function initializeCommands(bot) {
 
         const msg = messages.formNotify(previousStatus, checkForNextNearChanges(new Date(), state.getPreviousStatus()));
         if (telegram.GROUPS.includes(chat)) {
-            console.trace('Sending status to group ' + chat);
+            console.trace(`[${chat}] Sending status to group by user -> ${ctx?.from?.id}`);
             await service.notifyGroup(msg, chat)
         } else {
-            console.trace('Sending status to user ' + chat);
+            console.trace(`[${chat}] Sending status to user -> ${ctx?.from?.id}`);
             await methods.sendMessage(msg, chat, {disable_notification: true});
         }
     };
     const graph = async (ctx, type) => {
         const chat = ctx?.update?.message?.chat?.id;
         if (!(await guards.approveEligibleChat(ctx, chat))) return;
+        console.trace(`[${chat}] Initiated sending ${type.toUpperCase()} graph to user -> ${ctx?.from?.id}`);
         if (!MONGO_CONNECTED) {
-            await ctx.reply('MongoDB is not connected!');
+            const msg = 'DB is not connected!';
+            console.trace(msg);
+            await ctx.reply(msg);
             return;
         }
         const file = await generateAndGetGraph(type, new Date());
+        console.trace(`[${chat}] Sending ${type.toUpperCase()} graph to user -> ${ctx?.from?.id}`);
         await methods.sendPhotoWithRetries(file, chat);
     }
     const graphWeek = (ctx) => graph(ctx, SAMPLE.WEEK);
