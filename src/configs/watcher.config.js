@@ -1,7 +1,7 @@
 module.exports = {
     HERE: 'Watcher',
     PING_PATTERN: '* * * * *',
-    EVERY_WEEK_PATTERN: '0 0 * * 0',
-    EVERY_MONTH_PATTERN: '0 0 1 * *',
+    EVERY_WEEK_PATTERN: '1 0 * * 1',
+    EVERY_MONTH_PATTERN: '1 0 1 * *',
     FOLDER_NAME: 'ac-watcher'
 };
