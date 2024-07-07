@@ -34,7 +34,7 @@ function initializeCommands(bot) {
 
     const status = async (ctx) => {
         const chat = ctx?.update?.message?.chat?.id;
-        if (!guards.approveEligibleChat(chat)) return;
+        if (!(await guards.approveEligibleChat(ctx, chat))) return;
 
         let previousStatus = state.getPreviousStatus() ?? (await mongo.getLastHistory()).isAvailable;
         if (state.getIsNotifying() || previousStatus === undefined) {
@@ -53,7 +53,7 @@ function initializeCommands(bot) {
     };
     const graph = async (ctx, type) => {
         const chat = ctx?.update?.message?.chat?.id;
-        if (!(await guards.approveAdminCommand(ctx, chat))) return;
+        if (!(await guards.approveEligibleChat(ctx, chat))) return;
         if (!MONGO_CONNECTED) {
             await ctx.reply('MongoDB is not connected!');
             return;
