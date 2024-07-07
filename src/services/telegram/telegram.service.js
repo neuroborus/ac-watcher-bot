@@ -1,13 +1,14 @@
 const {bot} = require('./telegram-bot');
-const messages = require('../../utils/messages');
 const telegram = require('../../configs/telegram.config');
+const messages = require('../../utils/messages');
+const filesystem = require('../../utils/filesystem');
 const state = require('./telegram-state');
 const middlewares = require('./telegram-middlewares');
 const commands = require('./telegram.commands');
 const methods = require('./telegram.methods');
+const mongo = require('../mongo.service');
 
 const {checkForNextNearChanges} = require('../history/history-processor');
-const filesystem = require("../../utils/filesystem");
 
 
 function startBot() {
@@ -59,10 +60,11 @@ async function notifyAboutStatus(status) {
 }
 
 async function notifyGroup(msg, groupId) {
-    const prevMsgId = state.getGroupMessage(groupId);
+    const prevMsgId = state.getGroupMessage(groupId) || await mongo.getGroupMessage(groupId);
     const newMsgId = await methods.sendMessage(msg, groupId, {disable_notification: true});
     if (prevMsgId) await methods.deleteMessageWithRetries(prevMsgId, groupId);
     state.setGroupMessage(groupId, newMsgId);
+    await mongo.setGroupMessage(groupId, newMsgId);
     if (telegram.PIN_STATUS_IN_GROUPS) {
         await methods.pinMessageWithRetries(newMsgId, groupId, {disable_notification: true});
     }
