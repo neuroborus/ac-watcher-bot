@@ -42,7 +42,6 @@ function initializeCommands(bot) {
             return;
         }
 
-
         const msg = messages.formNotify(previousStatus, checkForNextNearChanges(new Date(), state.getPreviousStatus()));
         if (telegram.GROUPS.includes(chat)) {
             console.trace('Sending status to group ' + chat);
