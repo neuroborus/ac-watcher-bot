@@ -20,13 +20,7 @@ function maximizeDate(date) {
     return newDate;
 }
 
-function plusMinute(date) {
-    const newDate = new Date(date); // copy object
-    newDate.setMinutes(date.getMinutes() + 1);
-    return newDate;
-}
-
-const weekInMs = 1000 * 60 * 60 * 24 * 7;
+const WEEK_IN_MS = 1000 * 60 * 60 * 24 * 7;
 const daysInMs = (daysInMonth) => 1000 * 60 * 60 * 24 * daysInMonth;
 
 function daysInMonth(month, year) {
@@ -37,8 +31,7 @@ module.exports = {
     sleep,
     maximizeDate,
     minimizeDate,
-    plusMinute,
-    weekInMs,
+    WEEK_IN_MS,
     daysInMs,
     daysInMonth,
 };

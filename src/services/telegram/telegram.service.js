@@ -6,7 +6,7 @@ const middlewares = require('./telegram-middlewares');
 const commands = require('./telegram.commands');
 const methods = require('./telegram.methods');
 
-const {checkForNextNearChanges} = require('../history-processor');
+const {checkForNextNearChanges} = require('../history/history-processor');
 const filesystem = require("../../utils/filesystem");
 
 

@@ -1,7 +1,7 @@
-const {writeFileSync} = require('node:fs');
-const {maximizeDate, weekInMs, minimizeDate} = require('../utils/time');
-const {getGraphDataPath, pathToUrl, getTimezonedGraphDataPath} = require('../utils/filesystem');
-const {TIME_EPSILON, LOCALE, TIMEZONE} = require('../configs/history.config');
+const fs = require('node:fs');
+const history = require('../../configs/history.config');
+const time = require('../../utils/time');
+const filesystem = require('../../utils/filesystem');
 
 function processData(sortedAscData) {
     const result = sortedAscData.reduce((acc, cur) => {
@@ -9,9 +9,9 @@ function processData(sortedAscData) {
         const lastInd = size - 1;
         if (size > 0) {
             if (acc[lastInd].start.getDate() < cur.createdAt.getDate()) {
-                acc[lastInd].end = maximizeDate(acc[lastInd].start);
+                acc[lastInd].end = time.maximizeDate(acc[lastInd].start);
                 acc.push({
-                    start: minimizeDate(cur.createdAt),
+                    start: time.minimizeDate(cur.createdAt),
                     end: cur.createdAt,
                     status: acc[lastInd].status,
                 });
@@ -26,9 +26,9 @@ function processData(sortedAscData) {
         return acc;
     }, []);
 
-    // result[0].start = minimizeDate(result[0].start);
+    // result[0].start = time.minimizeDate(result[0].start);
     const nowDate = new Date();
-    let endBorder = maximizeDate(result[result.length-1].start);
+    let endBorder = time.maximizeDate(result[result.length-1].start);
     endBorder = endBorder > nowDate ? nowDate : endBorder;
     result[result.length-1].end = endBorder;
 
@@ -38,24 +38,24 @@ function processData(sortedAscData) {
 function writeHistoryData(rawSortedData, type) {
     const processedData = processData(rawSortedData);
     const timezonedData = processedData.map(el => {
-        if (el.start) el.start = el.start.toLocaleString(LOCALE, {timeZone: TIMEZONE});
-        if (el.end) el.end = el.end.toLocaleString(LOCALE, {timeZone: TIMEZONE});
+        if (el.start) el.start = el.start.toLocaleString(history.LOCALE, {timeZone: history.TIMEZONE});
+        if (el.end) el.end = el.end.toLocaleString(history.LOCALE, {timeZone: history.TIMEZONE});
         return el;
     })
     const stringifiedData = JSON.stringify(processedData, null, '\t');
     const stringifiedTimezonedData = JSON.stringify(timezonedData, null, '\t');
 
-    const timezonedFile = getTimezonedGraphDataPath(type)
-    writeFileSync(getGraphDataPath(type), stringifiedData, 'utf8');
-    writeFileSync(timezonedFile, stringifiedTimezonedData, 'utf8');
+    const timezonedFile = filesystem.getTimezonedGraphDataPath(type)
+    fs.writeFileSync(filesystem.getGraphDataPath(type), stringifiedData, 'utf8');
+    fs.writeFileSync(timezonedFile, stringifiedTimezonedData, 'utf8');
 
-    return pathToUrl(timezonedFile);
+    return filesystem.pathToUrl(timezonedFile);
 }
 
 function checkForNextNearChanges(changeDate, isAvailable) {
     let data;
     try {
-        data = require(getGraphDataPath('week'));
+        data = require(filesystem.getGraphDataPath(history.SAMPLE.WEEK));
     } catch (err) {
         console.warn("can't open week data: " + err);
         return null;
@@ -65,8 +65,8 @@ function checkForNextNearChanges(changeDate, isAvailable) {
     for(let i = 0; i < data.length; i++) {
         const el = data[i];
         if ((isAvailable ? 'ON' : 'OFF') === el.status &&
-            new Date(el.start).getTime() - TIME_EPSILON < changeDate.getTime() - weekInMs &&
-            new Date(el.end).getTime() + TIME_EPSILON > changeDate.getTime() - weekInMs) {
+            new Date(el.start).getTime() - history.TIME_EPSILON < changeDate.getTime() - time.WEEK_IN_MS &&
+            new Date(el.end).getTime() + history.TIME_EPSILON > changeDate.getTime() - time.WEEK_IN_MS) {
             if (data.length > i && data[i+1].status === el.status) {
                 templateEl = data[i+1];
             }
@@ -80,6 +80,6 @@ function checkForNextNearChanges(changeDate, isAvailable) {
 }
 
 module.exports = {
-    writeGraphData: writeHistoryData,
+    writeHistoryData,
     checkForNextNearChanges
 }
