@@ -5,24 +5,28 @@ const {TIME_EPSILON, LOCALE, TIMEZONE} = require('../configs/history.config');
 
 function processData(sortedAscData) {
     const result = sortedAscData.reduce((acc, cur, i) => {
+        const size = acc.length;
+        const lastInd = size - 1;
+        if (size > 0) {
+            if (acc[lastInd].start.getDate() < cur.createdAt.getDate()) {
+                acc[lastInd].end = maximizeDate(acc[lastInd].start);
+                acc.push({
+                    start: minimizeDate(cur.createdAt),
+                    end: cur.createdAt,
+                    status: acc[lastInd].status,
+                });
+            } else {
+                acc[lastInd].end = cur.createdAt;
+            }
+        }
         acc.push({
             start: cur.createdAt,
             status: cur.isAvailable ? 'ON' : 'OFF',
         });
-
-        if (i > 0) {
-            if (sortedAscData[i - 1].createdAt.getDate() < cur.createdAt.getDate()) {
-                // if new day
-                acc[i - 1].end = maximizeDate(acc[i - 1].start);
-                acc[i].start = minimizeDate(cur.createdAt)
-            } else {
-                acc[i - 1].end = cur.createdAt;
-            }
-        }
         return acc;
     }, []);
 
-    result[0].start = minimizeDate(result[0].start);
+    // result[0].start = minimizeDate(result[0].start);
     const nowDate = new Date();
     let endBorder = maximizeDate(result[result.length-1].start);
     endBorder = endBorder > nowDate ? nowDate : endBorder;
