@@ -1,10 +1,11 @@
-const filesystem = require('../../utils/filesystem');
-const messages = require('../../utils/messages');
-const telegram = require('../../configs/telegram.config');
 const state = require('./telegram-state');
 const guards = require('./telegram-guards');
 const service = require('./telegram.service');
 const methods = require('./telegram.methods');
+const mongo = require('../mongo.service');
+const filesystem = require('../../utils/filesystem');
+const messages = require('../../utils/messages');
+const telegram = require('../../configs/telegram.config');
 
 const {checkForNextNearChanges} = require('../history/history-processor');
 const {generateAndGetGraph} = require('../history/history.service');
@@ -35,8 +36,14 @@ function initializeCommands(bot) {
         const chat = ctx?.update?.message?.chat?.id;
         if (!guards.approveEligibleChat(chat)) return;
 
-        if (state.getIsNotifying() || state.getPreviousStatus() === 'undefined') ctx.reply('Try later...')
-        const msg = messages.formNotify(state.getPreviousStatus(), checkForNextNearChanges(new Date(), state.getPreviousStatus()));
+        let previousStatus = state.getPreviousStatus() ?? (await mongo.getLastHistory()).isAvailable;
+        if (state.getIsNotifying() || previousStatus === undefined) {
+            ctx.reply('Try later...')
+            return;
+        }
+
+
+        const msg = messages.formNotify(previousStatus, checkForNextNearChanges(new Date(), state.getPreviousStatus()));
         if (telegram.GROUPS.includes(chat)) {
             console.trace('Sending status to group ' + chat);
             await service.notifyGroup(msg, chat)
