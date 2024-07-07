@@ -9,18 +9,18 @@ async function connectToMongo() {
 
 async function createHistory(isAvailable) {
     if (!MONGO_CONNECTED) return;
-    await History.create({isAvailable})
+    await mongo.History.create({isAvailable})
     console.trace(`Sent to DB -> ${isAvailable}`);
 }
 
 async function getLastHistory() {
     if (!MONGO_CONNECTED) return undefined;
-    return await History.findOne().sort({createdAt: -1})
+    return await mongo.History.findOne().sort({createdAt: -1})
 }
 
 async function findHistoriesAsc(gte, lte) {
     if (!MONGO_CONNECTED) return [];
-    return await History.find(
+    return await mongo.History.find(
         {
             createdAt: {
                 "$gte": gte,
