@@ -3,6 +3,7 @@ const vegaLite = require('vega-lite');
 const vega = require('vega');
 const sharp = require('sharp');
 
+const {SAMPLE} = require('../../configs/history.config');
 const {getGraphPath} = require('../../utils/filesystem');
 const vegaSpecV5URL = 'file:///../resources/vega-spec-v5.json';
 
@@ -51,7 +52,7 @@ function createSpec(url, type) {
                 "title": "Day of the Month",
                 "sort": "ascending",
                 "axis": {
-                    "labelAngle": type === "week" ? 0 : 45,
+                    "labelAngle": type === SAMPLE.WEEK ? 0 : 45,
                     "format": "d",
                     "labelExpr": "datum.value"
                 }

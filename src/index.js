@@ -12,7 +12,7 @@ const mongo = require('./services/mongo.service');
 
 async function start() {
     await logger.inject();
-    telegram.service.startBot();
+    telegram.init.startBot();
     await mongo.connectToMongo();
     await notifications.sendInfo('Started!', HERE);
     worker.startWorker();

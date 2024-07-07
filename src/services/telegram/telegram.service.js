@@ -3,28 +3,13 @@ const telegram = require('../../configs/telegram.config');
 const messages = require('../../utils/messages');
 const filesystem = require('../../utils/filesystem');
 const state = require('./telegram-state');
-const middlewares = require('./telegram-middlewares');
-const commands = require('./telegram.commands');
 const methods = require('./telegram.methods');
 const mongo = require('../mongo.service');
 
 const {checkForNextNearChanges} = require('../history/history-processor');
 
 
-function startBot() {
-    const sessions = mongo.getSessions();
-    if (sessions) bot.use(sessions);
-    bot.use(middlewares.groupMiddleware);
-    bot.catch(async (err, ctx) => {
-        console.error('Telegram bot caught error -> ' + err);
-    });
-    commands.initializeCommands(bot);
-    bot.telegram.setMyCommands(telegram.COMMANDS)
-        .catch(e => console.error(e));
-    bot.launch()
-        .then(r => console.log('Bot started!'))
-        .catch(e => console.error(e));
-}
+
 
 async function logsToAdmin(layer) {
     layer = layer.toLowerCase();
@@ -73,7 +58,6 @@ async function notifyGroup(msg, groupId) {
 }
 
 module.exports = {
-    startBot,
     logsToAdmin,
     fileToChannel,
     photoToChannel,

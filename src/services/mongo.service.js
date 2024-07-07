@@ -54,7 +54,7 @@ async function setGroupMessage(groupId, messageId) {
 async function getGroupMessage(groupId) {
     if (!MONGO_CONNECTED) return undefined;
     const obj = await mongo.GroupMessage.findOne({ groupId });
-    return obj.messageId;
+    return obj?.messageId;
 }
 
 module.exports = {
