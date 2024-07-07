@@ -1,31 +1,33 @@
-const {join} = require('path');
-const {tmpdir} = require('os');
-const fs = require('fs');
+const fs = require('node:fs');
+const {join} = require('node:path');
+const {tmpdir} = require('node:os');
+
+const {FOLDER_NAME} = require('../configs/watcher.config');
 
 function createFilePath(filename) {
     return join(tmpdir(), filename);
 }
 
 function getLogsPath(level, extension = 'log') {
-    const path = join(tmpdir(), 'ac-watcher', 'logs');
+    const path = join(tmpdir(), FOLDER_NAME, 'logs');
     syncPath(path);
     return join(path, `${level}.${extension}`);
 }
 
 function getGraphPath(type, extension = 'svg') {
-    const path = join(tmpdir(), 'ac-watcher', 'graphs');
+    const path = join(tmpdir(), FOLDER_NAME, 'graphs');
     syncPath(path);
     return join(path, `${type}.${extension}`);
 }
 
 function getHistoryDataPath(type, extension = 'json') {
-    const path = join(tmpdir(), 'ac-watcher', 'graphs-data');
+    const path = join(tmpdir(), FOLDER_NAME, 'graphs-data');
     syncPath(path);
     return join(path, `${type}.${extension}`);
 }
 
 function getTimezonedGraphDataPath(type, extension = 'json') {
-    const path = join(tmpdir(), 'ac-watcher', 'graphs-data');
+    const path = join(tmpdir(), FOLDER_NAME, 'graphs-data');
     syncPath(path);
     return join(path, `${type}-tz.${extension}`);
 }

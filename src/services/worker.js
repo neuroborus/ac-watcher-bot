@@ -1,14 +1,16 @@
 const cron = require('node-cron');
-const {sleep, weekInMs, maximizeDate, daysInMonth, daysInMs} = require('../utils/time');
+const time = require('../utils/time');
 const logger = require('../utils/logger');
-const {HERE, PING_PATTERN, EVERY_WEEK_PATTERN, EVERY_MONTH_PATTERN} = require('../configs/watcher.config');
-const {sendAlert} = require('./notifications');
-const telegram = require('./telegram.bot');
-const {getAvailability} = require('./status');
-const {MONGO_CONNECTED} = require('../configs/mongo.config');
-const {History} = require('../mongo');
-const {generateAndGetGraph} = require('./graph.service');
+const watcher = require('../configs/watcher.config');
+const notifications= require('./notifications');
+const telegram = require('./telegram');
+const ping = require('./ping.service');
+const mongo = require('./mongo.service');
+const history = require('./history');
 
+const {MONGO_CONNECTED} = require('../configs/mongo.config');
+
+const WHERE = 'Worker';
 
 let previousStatus;
 let isClearingLogFiles = false;
@@ -16,33 +18,35 @@ let isPenguining = false;
 
 function startWorker() {
     console.log('Worker started!');
-    cron.schedule(PING_PATTERN, async () => {
+    cron.schedule(watcher.PING_PATTERN, async () => {
         await penguin();
     });
-    cron.schedule(EVERY_WEEK_PATTERN, async () => {
+    cron.schedule(watcher.EVERY_WEEK_PATTERN, async () => {
         await clearLogFiles();
+        if (!MONGO_CONNECTED) return;
         let date = new Date(Date.now() - 1000 * 60 * 5); // 5 minutes
         await sendGraphStatistics(
             'week',
-            maximizeDate(date)
+            time.maximizeDate(date)
         );
     });
-    cron.schedule(EVERY_MONTH_PATTERN, async () => {
-        await sleep(10000); // 10 sec
+    cron.schedule(watcher.EVERY_MONTH_PATTERN, async () => {
+        if (!MONGO_CONNECTED) return;
+        await time.sleep(10000); // 10 sec
         let date = new Date(Date.now() - 1000 * 60 * 15); // 15 minutes
         await sendGraphStatistics(
             'month',
-            maximizeDate(date)
+            time.maximizeDate(date)
         );
     });
 }
 
 async function sendGraphStatistics(type, nowDate) {
     try {
-        const file = await generateAndGetGraph(type, nowDate)
-        await telegram.photoToChannel(file);
+        const file = await history.generateAndGetGraph(type, nowDate)
+        await telegram.service.photoToChannel(file);
     } catch (err) {
-        console.error(err);
+        await notifications.sendAlert(`sendGraphStatistics() -=> ${err}`, WHERE);
     }
 }
 
@@ -56,7 +60,7 @@ async function penguin() {
     }
     isPenguining = true;
     try {
-        const isAvailable = await getAvailability();
+        const isAvailable = await ping.getAvailability();
 
         console.trace('Current status -> ' + (isAvailable ? 'on' : 'off'));
 
@@ -64,25 +68,25 @@ async function penguin() {
 
         if (previous === undefined) {
             previousStatus = isAvailable;
-            await sendToDbIfEnabled(isAvailable)
+            await mongo.createHistory(isAvailable)
             console.trace('Sent to db!');
         } else if (isAvailable !== previous) {
             previousStatus = isAvailable;
             console.trace('Notifying...');
-            await telegram.notifyAboutStatus(isAvailable);
+            await telegram.service.notifyAboutStatus(isAvailable);
             console.trace('Notified!');
-            await sendToDbIfEnabled(isAvailable)
+            await mongo.createHistory(isAvailable)
         }
     } catch (err) {
-        console.error(err);
+        await notifications.sendAlert(`penguin() -=> ${err}`, WHERE);
     }
     isPenguining = false;
 }
 
 async function checkPreviousStatus() {
     let status;
-    if (previousStatus === undefined && MONGO_CONNECTED) {
-        const obj = await History.findOne().sort({createdAt: -1});
+    if (previousStatus === undefined) {
+        const obj = await mongo.getLastHistory();
         status = obj?.isAvailable;
     } else {
         status = previousStatus;
@@ -90,45 +94,28 @@ async function checkPreviousStatus() {
     return status;
 }
 
-async function sendToDbIfEnabled(isAvailable) {
-    if (MONGO_CONNECTED) {
-        await History.create({isAvailable});
-        console.trace('Sent to db!');
-    }
-}
-
 ///////////////////////////////////
 
 async function clearLogFiles() {
     if (isClearingLogFiles) {
-        console.warn(
-            'clearLogFiles() -=> skip: already processing!'
-        );
+        console.warn('clearLogFiles() -=> skip: already processing!');
         return;
     }
 
-    console.trace(
-        'clearLogFiles() -=> started!'
-    );
+    console.trace('clearLogFiles() -=> started!');
 
     try {
-        await telegram.infoAdmin(
-            'Sending #backup of inner logs before deleting...',
-            HERE,
-            'INFO'
-        );
-        await telegram.sendLogFile('logs');
+        await notifications.sendInfo('Sending #backup of inner logs before deleting...', WHERE);
+        await telegram.service.logsToAdmin('logs');
 
         logger.clearLogs();
-        await sleep(5000); // Wait until fs will sync
+        await time.sleep(5000); // Wait until fs will sync
 
-    } catch (e) {
-        await sendAlert('clearLogFiles() -=> ' + e, HERE);
+    } catch (err) {
+        await notifications.sendAlert(`clearLogFiles() -=> ${err}`, WHERE);
     } finally {
         isClearingLogFiles = false;
-        console.trace(
-            'clearLogFiles() -=> ended!'
-        );
+        console.trace('clearLogFiles() -=> ended!');
     }
 }
 
