@@ -7,6 +7,7 @@ const {SAMPLE} = require('../../configs/history.config');
 const {getGraphPath} = require('../../utils/filesystem');
 const vegaSpecV5URL = 'file:///../resources/vega-spec-v5.json';
 
+const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 function createSpec(url, type) {
     return {
         "$schema": vegaSpecV5URL,
@@ -14,7 +15,7 @@ function createSpec(url, type) {
             url,
         },
         "title": {
-            "text": `Power Status (last ${type.toUpperCase()})`,
+            "text": `Power Status (${type.toUpperCase()})`,
             "fontSize": 20,
             "fontWeight": "bold",
             "anchor": "start"
@@ -49,7 +50,7 @@ function createSpec(url, type) {
             "x": {
                 "field": "dayOfMonth",
                 "type": "nominal",
-                "title": "Day of the Month",
+                "title": `Day of the ${capitalize(type)}`,
                 "sort": "ascending",
                 "axis": {
                     "labelAngle": type === SAMPLE.WEEK ? 0 : 45,
