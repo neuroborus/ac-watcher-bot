@@ -7,6 +7,8 @@ async function connectToMongo() {
     await mongo.connectMongo();
 }
 
+// History
+
 async function createHistory(isAvailable) {
     if (!MONGO_CONNECTED) return;
     await mongo.History.create({isAvailable})
@@ -30,9 +32,31 @@ async function findHistoriesAsc(gte, lte) {
     ).sort({createdAt: 1});
 }
 
+// GroupMessage
+
+async function setGroupMessage(groupId, messageId) {
+    if (!MONGO_CONNECTED) return undefined;
+    return await mongo.GroupMessage.findOneAndUpdate(
+        { groupId },
+        { messageId },
+        {
+            new: true, // Always returning updated work experiences.
+            upsert: true, // By setting this true, it will create if it doesn't exist
+            projection: { _id: 0, __v: 0 }, // without return _id and __v
+        });
+}
+
+async function getGroupMessage(groupId) {
+    if (!MONGO_CONNECTED) return undefined;
+    const obj = await mongo.GroupMessage.findOne({ groupId });
+    return obj.messageId;
+}
+
 module.exports = {
     connectToMongo,
     createHistory,
     getLastHistory,
-    findHistoriesAsc
+    findHistoriesAsc,
+    setGroupMessage,
+    getGroupMessage
 }
