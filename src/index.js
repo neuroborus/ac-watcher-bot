@@ -2,7 +2,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const {HERE} = require('./configs/watcher.config');
-const {startBot} = require('./services/telegram.bot');
+const telegram = require('./services/telegram');
 const {startWorker} = require('./services/worker');
 const {
     sendAlert,
@@ -16,7 +16,7 @@ const {connectMongo} = require('./mongo');
 
 async function start() {
     await logger.inject();
-    startBot();
+    telegram.service.startBot();
     if (MONGO_CONNECTED) await connectMongo();
     await sendInfo('Started!', HERE);
     startWorker();
