@@ -37,10 +37,10 @@ async function sendMessage(msg, recipient, options = {}, attempt = 0) {
             } else {
                 message = await bot.telegram.sendDocument(recipient, document);
             }
-        } catch (e) {
+        } catch (err) {
             // It is already message sending: bad practice to send the error to an admin
             console.error(
-                `[${recipient}] [${attempt}/${telegram.RETRIES}] Sending message: ${e}`
+                `[${recipient}] [${attempt}/${telegram.RETRIES}] Sending message: ${err}`
             );
             if (attempt < telegram.RETRIES) {
                 await time.sleep(telegram.RETRY_DELAY_MS);

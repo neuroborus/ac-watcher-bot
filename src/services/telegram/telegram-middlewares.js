@@ -16,7 +16,7 @@ async function groupMiddleware(ctx, next) {
             }
         }
     } catch (err) {
-        console.error("groupMiddleware => " + err);
+        console.error(`groupMiddleware => ${err}`);
     }
     await next();
 }
@@ -30,7 +30,7 @@ const processPin = async (ctx) => {
             // await ctx.telegram.deleteMessage(message.chat.id, message.message_id);
             await methods.deleteActionWithRetries(message);
         } catch (err) {
-            console.error("processPin => " + err);
+            console.error(`processPin => ${err}`);
         }
     }
     return flag;

@@ -1,8 +1,8 @@
-const mongo = require("../mongo.service");
-const {bot} = require("./telegram-bot");
-const middlewares = require("./telegram-middlewares");
-const commands = require("./telegram.commands");
-const telegram = require("../../configs/telegram.config");
+const {bot} = require('./telegram-bot');
+const mongo = require('../mongo.service');
+const middlewares = require('./telegram-middlewares');
+const commands = require('./telegram.commands');
+const telegram = require('../../configs/telegram.config');
 
 function startBot() {
     const sessions = mongo.getSessions();
