@@ -93,7 +93,7 @@ async function plot(dataUrl, type) {
     const png = await sh.png();
 
     const pathPng = getGraphPath(type, 'png');
-    fs.unlinkSync(pathPng);
+    fs.rmSync(pathPng, { force: true });
     await png.toFile(pathPng);
 
 
