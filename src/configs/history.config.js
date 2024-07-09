@@ -5,5 +5,6 @@ module.exports = {
     SAMPLE: {
         WEEK: 'week',
         MONTH: 'month',
-    }
+    },
+    PLOTTER_DENSITY: 150
 }
