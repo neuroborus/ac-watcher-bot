@@ -4,7 +4,7 @@ const vega = require('vega');
 const sharp = require('sharp');
 sharp.cache({ items: 0, memory: 0, files: 0 });
 
-const {SAMPLE} = require('../../configs/history.config');
+const history = require('../../configs/history.config');
 const {getGraphPath} = require('../../utils/filesystem');
 const vegaSpecV5URL = 'file:///../resources/vega-spec-v5.json';
 
@@ -54,7 +54,7 @@ function createSpec(url, type) {
                 "title": `Day of the ${capitalize(type)}`,
                 "sort": "ascending",
                 "axis": {
-                    "labelAngle": type === SAMPLE.WEEK ? 0 : 45,
+                    "labelAngle": type === history.SAMPLE.WEEK ? 0 : 45,
                     "format": "d",
                     "labelExpr": "datum.value"
                 }
@@ -90,7 +90,7 @@ async function plot(dataUrl, type) {
     const pathSvg = getGraphPath(type, 'svg');
     await fs.writeFile(pathSvg, image);
 
-    const sh = await sharp(pathSvg, { density: 300 });
+    const sh = await sharp(pathSvg, { density: history.PLOTTER_DENSITY });
     const pngBuffer = await sh.png().toBuffer();
 
     const pathPng = getGraphPath(type, 'png');

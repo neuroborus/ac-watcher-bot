@@ -53,6 +53,9 @@ function writeHistoryData(rawSortedData, type) {
     return filesystem.pathToUrl(timezonedFile);
 }
 
+
+
+
 function checkForNextNearChanges(changeDate, isAvailable) {
     let data;
     try {
@@ -62,22 +65,31 @@ function checkForNextNearChanges(changeDate, isAvailable) {
         return null;
     }
 
+    const templateEl = getTemplateEl(data, changeDate, isAvailable);
+    if (!templateEl) return undefined;
+
+    return new Date(new Date(templateEl.end).getTime() + time.WEEK_IN_MS);
+}
+// Tools
+const getTemplateEl = (data, changeDate, isAvailable) => {
     let templateEl;
     for(let i = 0; i < data.length; i++) {
         const el = data[i];
-        if ((isAvailable ? 'ON' : 'OFF') === el.status &&
-            new Date(el.start).getTime() - history.TIME_EPSILON < changeDate.getTime() - time.WEEK_IN_MS &&
-            new Date(el.end).getTime() + history.TIME_EPSILON > changeDate.getTime() - time.WEEK_IN_MS) {
+        if (isTemplateEl(el, changeDate, isAvailable)) {
             if (data.length > i && data[i+1].status === el.status) {
                 templateEl = data[i+1];
             }
             templateEl = el;
+            break;
         }
+        if (new Date(el.start).getTime() > changeDate.getTime() - time.WEEK_IN_MS) break;
     }
-
-    if (!templateEl) return null;
-
-    return new Date(templateEl.end);
+    return templateEl;
+}
+const isTemplateEl = (el, changeDate, isAvailable) => {
+    return (isAvailable ? 'ON' : 'OFF') === el.status &&
+        new Date(el.start).getTime() - history.TIME_EPSILON < changeDate.getTime() - time.WEEK_IN_MS &&
+        new Date(el.end).getTime() > changeDate.getTime() - time.WEEK_IN_MS;
 }
 
 module.exports = {
