@@ -42,6 +42,7 @@ function writeHistoryData(rawSortedData, type) {
         if (el.end) el.end = el.end.toLocaleString(history.LOCALE, {timeZone: history.TIMEZONE});
         return el;
     })
+
     const stringifiedData = JSON.stringify(processedData, null, '\t');
     const stringifiedTimezonedData = JSON.stringify(timezonedData, null, '\t');
 

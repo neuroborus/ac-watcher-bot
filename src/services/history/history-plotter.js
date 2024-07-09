@@ -1,7 +1,8 @@
-const fs = require('node:fs');
+const fs = require('node:fs').promises;
 const vegaLite = require('vega-lite');
 const vega = require('vega');
 const sharp = require('sharp');
+sharp.cache({ items: 0, memory: 0, files: 0 });
 
 const {SAMPLE} = require('../../configs/history.config');
 const {getGraphPath} = require('../../utils/filesystem');
@@ -87,14 +88,13 @@ function createView(dataUrl, type) {
 async function plot(dataUrl, type) {
     const image = await createView(dataUrl, type).toSVG();
     const pathSvg = getGraphPath(type, 'svg');
-    fs.writeFileSync(pathSvg, image);
+    await fs.writeFile(pathSvg, image);
 
     const sh = await sharp(pathSvg, { density: 300 });
-    const png = await sh.png();
+    const pngBuffer = await sh.png().toBuffer();
 
     const pathPng = getGraphPath(type, 'png');
-    fs.rmSync(pathPng, { force: true });
-    await png.toFile(pathPng);
+    await fs.writeFile(pathPng, pngBuffer);
 
 
     return pathPng;
