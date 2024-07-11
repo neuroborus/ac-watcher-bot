@@ -20,9 +20,14 @@ function maximizeDate(date) {
     return newDate;
 }
 
+function maximizedYesterday() {
+    let yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    return maximizeDate(yesterday);
+}
+
 const WEEK_IN_MS = 1000 * 60 * 60 * 24 * 7;
 const daysInMs = (daysInMonth) => 1000 * 60 * 60 * 24 * daysInMonth;
-
 function daysInMonth(month, year) {
     return new Date(year, month, 0).getDate();
 }
@@ -31,6 +36,7 @@ module.exports = {
     sleep,
     maximizeDate,
     minimizeDate,
+    maximizedYesterday,
     WEEK_IN_MS,
     daysInMs,
     daysInMonth,

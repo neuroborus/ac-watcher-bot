@@ -25,19 +25,17 @@ function startWorker() {
     cron.schedule(watcher.EVERY_WEEK_PATTERN, async () => {
         await clearLogFiles();
         if (!MONGO_CONNECTED) return;
-        let date = new Date(Date.now() - 1000 * 60 * 5); // 5 minutes
         await sendGraphStatistics(
             SAMPLE.WEEK,
-            time.maximizeDate(date)
+            time.maximizedYesterday()
         );
     });
     cron.schedule(watcher.EVERY_MONTH_PATTERN, async () => {
         if (!MONGO_CONNECTED) return;
         await time.sleep(10000); // 10 sec
-        let date = new Date(Date.now() - 1000 * 60 * 15); // 15 minutes
         await sendGraphStatistics(
             SAMPLE.MONTH,
-            time.maximizeDate(date)
+            time.maximizedYesterday()
         );
     });
 }
