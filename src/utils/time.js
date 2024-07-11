@@ -1,3 +1,5 @@
+const {REPEATABLE_WEEKS} = require('../configs/watcher.config');
+
 async function sleep(ms) {
     return new Promise((resolve) => {
         setTimeout(resolve, ms);
@@ -28,9 +30,12 @@ function maximizedYesterday() {
 
 const WEEK_IN_MS = 1000 * 60 * 60 * 24 * 7;
 const daysInMs = (daysInMonth) => 1000 * 60 * 60 * 24 * daysInMonth;
+
 function daysInMonth(month, year) {
     return new Date(year, month, 0).getDate();
 }
+
+const SCHEDULE_CYCLE_MS = REPEATABLE_WEEKS * WEEK_IN_MS;
 
 module.exports = {
     sleep,
@@ -40,4 +45,5 @@ module.exports = {
     WEEK_IN_MS,
     daysInMs,
     daysInMonth,
+    SCHEDULE_CYCLE_MS
 };

@@ -37,7 +37,7 @@ function initializeCommands(bot) {
         if (!(await guards.approveEligibleChat(ctx, chat))) return;
         console.trace(`[${chat}] Initiated sending status by user -> ${ctx?.from?.id}`);
 
-        let previousStatus = state.getPreviousStatus() ?? (await mongo.getLastHistory()).isAvailable;
+        let previousStatus = state.getPreviousStatus() ?? (await mongo.getLastHistory())?.isAvailable;
         if (state.getIsNotifying() || previousStatus === undefined) {
             ctx.reply('Try later...')
             return;

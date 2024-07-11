@@ -59,7 +59,7 @@ function writeHistoryData(rawSortedData, type) {
 function checkForNextNearChanges(changeDate, isAvailable) {
     let data;
     try {
-        data = require(filesystem.getGraphDataPath(history.SAMPLE.WEEK));
+        data = require(filesystem.getGraphDataPath(history.SAMPLE.MONTH));
     } catch (err) {
         console.warn("can't open week data: " + err);
         return null;
@@ -68,7 +68,7 @@ function checkForNextNearChanges(changeDate, isAvailable) {
     const templateEl = getTemplateEl(data, changeDate, isAvailable);
     if (!templateEl) return undefined;
 
-    return new Date(new Date(templateEl.end).getTime() + time.WEEK_IN_MS);
+    return new Date(new Date(templateEl.end).getTime() + time.SCHEDULE_CYCLE_MS);
 }
 // Tools
 const getTemplateEl = (data, changeDate, isAvailable) => {
@@ -82,14 +82,14 @@ const getTemplateEl = (data, changeDate, isAvailable) => {
             templateEl = el;
             break;
         }
-        if (new Date(el.start).getTime() > changeDate.getTime() - time.WEEK_IN_MS) break;
+        if (new Date(el.start).getTime() > changeDate.getTime() - time.SCHEDULE_CYCLE_MS) break;
     }
     return templateEl;
 }
 const isTemplateEl = (el, changeDate, isAvailable) => {
     return (isAvailable ? 'ON' : 'OFF') === el.status &&
-        new Date(el.start).getTime() - history.TIME_EPSILON < changeDate.getTime() - time.WEEK_IN_MS &&
-        new Date(el.end).getTime() > changeDate.getTime() - time.WEEK_IN_MS;
+        new Date(el.start).getTime() - history.TIME_EPSILON < changeDate.getTime() - time.SCHEDULE_CYCLE_MS &&
+        new Date(el.end).getTime() > changeDate.getTime() - time.SCHEDULE_CYCLE_MS;
 }
 
 module.exports = {
