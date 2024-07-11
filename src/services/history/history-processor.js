@@ -61,7 +61,7 @@ function checkForNextNearChanges(changeDate, isAvailable) {
     try {
         data = require(filesystem.getGraphDataPath(history.SAMPLE.MONTH));
     } catch (err) {
-        console.warn("can't open week data: " + err);
+        console.warn("can't open month data: " + err);
         return null;
     }
 
