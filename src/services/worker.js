@@ -23,32 +23,25 @@ function startWorker() {
         await penguin();
     });
     cron.schedule(watcher.EVERY_WEEK_PATTERN, async () => {
+        // Actualize data for predictions and send graphs
         await clearLogFiles();
         if (!MONGO_CONNECTED) return;
-        await sendGraphStatistics(
-            SAMPLE.WEEK,
-            time.maximizedYesterday()
-        );
-    });
-    cron.schedule(watcher.EVERY_MONTH_PATTERN, async () => {
-        if (!MONGO_CONNECTED) return;
-        await time.sleep(10000); // 10 sec
-        await sendGraphStatistics(
-            SAMPLE.MONTH,
-            time.maximizedYesterday()
-        );
+        await generateStatisticsAndSendGraph(time.maximizedYesterday());
     });
 }
 
-async function sendGraphStatistics(type, nowDate) {
+async function generateStatisticsAndSendGraph(nowDate) {
     try {
-        const file = await history.generateAndGetGraph(type, nowDate)
-        await telegram.service.photoToChannel(file);
+        // !: Heavy operations -> one-by-one
+        const weekFile = await history.generateStatisticsAndGetGraph(SAMPLE.WEEK, nowDate);
+        const monthFile = await history.generateStatisticsAndGetGraph(SAMPLE.MONTH, nowDate);
+        const files = [weekFile, monthFile];
+        await telegram.service.photosToChannel(files)
+        await telegram.service.photosToUsers(files);
     } catch (err) {
-        await notifications.sendAlert(`sendGraphStatistics() -=> ${err}`, WHERE);
+        await notifications.sendAlert(`generateStatisticsAndSendGraph() -=> ${err}`, WHERE);
     }
 }
-
 
 /////////////////////////////
 

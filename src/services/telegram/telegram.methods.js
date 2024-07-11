@@ -14,6 +14,8 @@ async function sendMessage(msg, recipient, options = {}, attempt = 0) {
 
     try {
         await time.sleep(telegram.REQUESTS_PAUSE_MS);
+        await bot.telegram.sendChatAction(recipient, 'typing');
+        await time.sleep(telegram.REQUESTS_PAUSE_MS);
         if (msg.length >= telegram.MAX_MSG_SIZE) {
             isSizeWell = false;
             const prefix = options?.disable_notification ? 'ERROR__' : 'FATAL__';
@@ -90,45 +92,76 @@ async function pinMessageWithRetries(msgId, chatId, options = {}, attempt = 0) {
     }
 }
 
-async function sendFileWithRetries(filename, filepath, chatId, attempt = 0) {
+async function sendFileWithRetries(filename, filepath, chatId, replyToMessageId = undefined, attempt = 0) {
     if (attempt <= telegram.RETRIES) {
         try {
+            await time.sleep(telegram.REQUESTS_PAUSE_MS);
+            await bot.telegram.sendChatAction(chatId, 'upload_document');
             await time.sleep(telegram.REQUESTS_PAUSE_MS);
             const document = {
                 source: filepath,
                 filename
             };
-            await bot.telegram.sendDocument(chatId, document);
+            await bot.telegram.sendDocument(chatId, document,{reply_to_message_id: replyToMessageId});
         } catch (err) {
             await informing.alertAdmin(
                 `sendFileWithRetries [${filename}][${attempt}/${telegram.RETRIES}] => ${err}`,
                 'sendFileWithRetries',
                 notifications.LEVEL.ERROR
             );
-            await sendFileWithRetries(filename, filepath, chatId, attempt + 1);
+            await sendFileWithRetries(filename, filepath, chatId, replyToMessageId, attempt + 1);
         }
     }
 }
 
-async function sendPhotoWithRetries(filepath, chatId, attempt = 0) {
+async function sendPhotoWithRetries(filepath, chatId, replyToMessageId = undefined, attempt = 0) {
     if (attempt <= telegram.RETRIES) {
         try {
             await time.sleep(telegram.REQUESTS_PAUSE_MS);
-            await bot.telegram.sendPhoto(chatId, {source: filepath});
+            await bot.telegram.sendChatAction(chatId, 'upload_photo');
+            await time.sleep(telegram.REQUESTS_PAUSE_MS);
+            await bot.telegram.sendPhoto(chatId, {source: filepath}, {reply_to_message_id: replyToMessageId});
         } catch (err) {
             await informing.alertAdmin(
                 `[${chatId}] sendFileWithRetries [${filepath}][${attempt}/${telegram.RETRIES}] => ${err}`,
                 'sendFileWithRetries',
                 notifications.LEVEL.ERROR
             );
-            await sendPhotoWithRetries(filepath, chatId, attempt + 1);
+            await sendPhotoWithRetries(filepath, chatId, replyToMessageId, attempt + 1);
         }
     }
 }
 
-async function deleteActionWithRetries (message, attempt = 0) {
-    if (message?.message_id && attempt < 2) {
+async function sendPhotosGroupWithRetries(photoPathsArray, chatId, replyToMessageId = undefined, attempt = 0) {
+    if (attempt <= telegram.RETRIES) {
+        const mediaGroup = photoPathsArray.map((photo) => {
+            return {
+                type: 'photo',
+                media: {
+                    source: photo
+                }
+            };
+        });
         try {
+            await time.sleep(telegram.REQUESTS_PAUSE_MS);
+            await bot.telegram.sendChatAction(chatId, 'upload_photo');
+            await time.sleep(telegram.REQUESTS_PAUSE_MS);
+            await bot.telegram.sendMediaGroup(chatId, mediaGroup, {reply_to_message_id: replyToMessageId});
+        } catch (err) {
+            await informing.alertAdmin(
+                `[${chatId}] sendPhotosGroupWithRetries [${mediaGroup.length}][${attempt}/${telegram.RETRIES}] => ${err}`,
+                'sendPhotosGroupWithRetries',
+                notifications.LEVEL.ERROR
+            );
+            await sendPhotosGroupWithRetries(photoPathsArray, chatId, replyToMessageId, attempt + 1);
+        }
+    }
+}
+
+async function deleteActionWithRetries(message, attempt = 0) {
+    if (message?.message_id && attempt <= telegram.RETRIES) {
+        try {
+            await time.sleep(telegram.REQUESTS_PAUSE_MS);
             await bot.telegram.deleteMessage(message.chat.id, message.message_id);
         } catch (err) {
             await informing.alertAdmin(
@@ -148,5 +181,6 @@ module.exports = {
     pinMessageWithRetries,
     sendFileWithRetries,
     sendPhotoWithRetries,
+    sendPhotosGroupWithRetries,
     deleteActionWithRetries
 }

@@ -5,7 +5,8 @@ const plotter = require('./history-plotter');
 
 const {SAMPLE} = require('../../configs/history.config');
 
-async function generateAndGetGraph(type, nowDate) {
+// Creates statistics files and returns graph image path
+async function generateStatisticsAndGetGraph(type, nowDate) {
     let gte;
     const lte = nowDate.getTime();
     switch (type) {
@@ -23,10 +24,10 @@ async function generateAndGetGraph(type, nowDate) {
 
     const rawSortedData = await mongo.findHistoriesAsc(gte, lte);
 
-    const dataUrl = processor.writeHistoryData(rawSortedData, type);
+    const dataUrl = processor.syncHistoryData(rawSortedData, type);
     return await plotter.plot(dataUrl, type);
 }
 
 module.exports = {
-    generateAndGetGraph,
+    generateStatisticsAndGetGraph,
 }

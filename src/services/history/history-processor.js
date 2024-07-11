@@ -35,25 +35,24 @@ function processData(sortedAscData) {
     return result;
 }
 
-function writeHistoryData(rawSortedData, type) {
+// Returns URL to generated timezone data
+function syncHistoryData(rawSortedData, type) {
     const processedData = processData(rawSortedData);
     const timezonedData = processedData.map(el => {
         if (el.start) el.start = el.start.toLocaleString(history.LOCALE, {timeZone: history.TIMEZONE});
         if (el.end) el.end = el.end.toLocaleString(history.LOCALE, {timeZone: history.TIMEZONE});
         return el;
-    })
+    });
 
     const stringifiedData = JSON.stringify(processedData, null, '\t');
     const stringifiedTimezonedData = JSON.stringify(timezonedData, null, '\t');
 
-    const timezonedFile = filesystem.getTimezonedGraphDataPath(type)
+    const timezonedFile = filesystem.getTimezonedGraphDataPath(type);
     fs.writeFileSync(filesystem.getGraphDataPath(type), stringifiedData, 'utf8');
     fs.writeFileSync(timezonedFile, stringifiedTimezonedData, 'utf8');
 
     return filesystem.pathToUrl(timezonedFile);
 }
-
-
 
 
 function checkForNextNearChanges(changeDate, isAvailable) {
@@ -93,6 +92,6 @@ const isTemplateEl = (el, changeDate, isAvailable) => {
 }
 
 module.exports = {
-    writeHistoryData,
+    syncHistoryData,
     checkForNextNearChanges
 }

@@ -85,6 +85,7 @@ function createView(dataUrl, type) {
     return new vega.View(vega.parse(spec), {renderer: 'none'});
 }
 
+// Returns PNG graph path
 async function plot(dataUrl, type) {
     const image = await createView(dataUrl, type).toSVG();
     const pathSvg = getGraphPath(type, 'svg');

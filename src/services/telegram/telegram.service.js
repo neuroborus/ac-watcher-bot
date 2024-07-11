@@ -28,6 +28,24 @@ async function photoToChannel(filepath) {
     await methods.sendPhotoWithRetries(filepath, telegram.CHANNEL);
 }
 
+async function photoToUsers(filepath) {
+    await methods.sendPhotoWithRetries(filepath, telegram.ADMIN);
+    for (const user of telegram.USERS) {
+        await methods.sendPhotoWithRetries(filepath, user);
+    }
+}
+
+async function photosToChannel(photoPaths) {
+    await methods.sendPhotosGroupWithRetries(photoPaths, telegram.CHANNEL);
+}
+
+async function photosToUsers(photoPaths) {
+    await methods.sendPhotosGroupWithRetries(photoPaths, telegram.ADMIN);
+    for (const user of telegram.USERS) {
+        await methods.sendPhotosGroupWithRetries(photoPaths, user);
+    }
+}
+
 async function notifyAboutStatus(status) {
     state.setIsNotifying(true); // It is not a singleton!
 
@@ -61,6 +79,9 @@ module.exports = {
     logsToAdmin,
     fileToChannel,
     photoToChannel,
+    photoToUsers,
+    photosToChannel,
+    photosToUsers,
     notifyAboutStatus,
     notifyGroup
 }

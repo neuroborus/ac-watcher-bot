@@ -20,6 +20,10 @@ module.exports = {
     REQUESTS_PAUSE_MS: 500,
     COMMANDS: [
         {
+            command: 'graphs',
+            description: 'Get last week and month graphs',
+        },
+        {
             command: 'graph_week',
             description: 'Get last week graph',
         },
