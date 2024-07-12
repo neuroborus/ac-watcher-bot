@@ -33,6 +33,7 @@ jobs:
           IS_MONGO_CONNECTED: ${{ vars.IS_MONGO_CONNECTED }}
           TZ: ${{ vars.TZ }}
           SCHEDULE_REPEATABLE_WEEKS: ${{ vars.SCHEDULE_REPEATABLE_WEEKS }}
+          IS_PREDICTION: ${{ vars.IS_PREDICTION }}
 
           PINGING_HOST: ${{ secrets.PINGING_HOST }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -51,6 +52,7 @@ jobs:
           echo "IS_MONGO_CONNECTED=$IS_MONGO_CONNECTED" >> .env
           echo "TZ=$TZ" >> .env
           echo "SCHEDULE_REPEATABLE_WEEKS=$SCHEDULE_REPEATABLE_WEEKS" >> .env
+          echo "IS_PREDICTION=$IS_PREDICTION" >> .env
           echo "MONGO_URL=$MONGO_URL" >> .env
           echo "PINGING_HOST=$PINGING_HOST" >> .env
           echo "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN" >> .env

@@ -8,10 +8,9 @@ const messages = require('../../utils/messages');
 const telegram = require('../../configs/telegram.config');
 const history = require('../history');
 
-
 const {MONGO_CONNECTED} = require('../../configs/mongo.config');
 const {SAMPLE} = require('../../configs/history.config');
-
+const {PREDICTION} = require('../../configs/watcher.config');
 
 const me = (ctx) => ctx.reply(`PONG: user=${ctx?.from?.id} | chat=${ctx?.update?.message?.chat?.id}`);
 const sendLogFile = async (layer, ctx) => {
@@ -42,7 +41,10 @@ const status = async (ctx) => {
         return;
     }
 
-    const msg = messages.formNotify(previousStatus, await history.checkForNextChange(new Date(), state.getPreviousStatus()));
+    const change = PREDICTION ?
+        await history.checkForNextChange(new Date(), state.getPreviousStatus()) :
+        undefined;
+    const msg = messages.formNotify(previousStatus, change);
     if (telegram.GROUPS.includes(chat)) {
         console.trace(`[${chat}] Sending status to group by user -> ${ctx?.from?.id}`);
         await service.notifyGroup(msg, chat)
