@@ -6,9 +6,9 @@ const mongo = require('../mongo.service');
 const filesystem = require('../../utils/filesystem');
 const messages = require('../../utils/messages');
 const telegram = require('../../configs/telegram.config');
+const history = require('../history');
 
-const {checkForNextNearChanges} = require('../history/history-processor');
-const {generateStatisticsAndGetGraph} = require('../history/history.service');
+
 const {MONGO_CONNECTED} = require('../../configs/mongo.config');
 const {SAMPLE} = require('../../configs/history.config');
 
@@ -42,7 +42,7 @@ const status = async (ctx) => {
         return;
     }
 
-    const msg = messages.formNotify(previousStatus, checkForNextNearChanges(new Date(), state.getPreviousStatus()));
+    const msg = messages.formNotify(previousStatus, history.checkForNextChange(new Date(), state.getPreviousStatus()));
     if (telegram.GROUPS.includes(chat)) {
         console.trace(`[${chat}] Sending status to group by user -> ${ctx?.from?.id}`);
         await service.notifyGroup(msg, chat)
@@ -61,7 +61,7 @@ const graphTyped = async (ctx, type) => {
         await ctx.reply(msg);
         return;
     }
-    const file = await generateStatisticsAndGetGraph(type, new Date());
+    const file = await history.createGraph(type, new Date());
     console.trace(`[${chat}] Sending ${type.toUpperCase()} graph to user -> ${ctx?.from?.id}`);
     await methods.sendPhotoWithRetries(file, chat);
 }
@@ -81,8 +81,8 @@ const graph = async (ctx) => {
     }
     const nowDate = new Date();
     // !: Heavy operations -> one-by-one
-    const weekFile = await generateStatisticsAndGetGraph(SAMPLE.WEEK, nowDate);
-    const monthFile = await generateStatisticsAndGetGraph(SAMPLE.MONTH, nowDate);
+    const weekFile = await history.createGraph(SAMPLE.WEEK, nowDate);
+    const monthFile = await history.createGraph(SAMPLE.MONTH, nowDate);
     const files = [weekFile, monthFile];
     console.trace(`[${chat}] Sending graphs to user -> ${ctx?.from?.id}`);
     await methods.sendPhotosGroupWithRetries(files, chat)
