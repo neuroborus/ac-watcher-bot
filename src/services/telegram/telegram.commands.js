@@ -42,7 +42,7 @@ const status = async (ctx) => {
         return;
     }
 
-    const msg = messages.formNotify(previousStatus, history.checkForNextChange(new Date(), state.getPreviousStatus()));
+    const msg = messages.formNotify(previousStatus, await history.checkForNextChange(new Date(), state.getPreviousStatus()));
     if (telegram.GROUPS.includes(chat)) {
         console.trace(`[${chat}] Sending status to group by user -> ${ctx?.from?.id}`);
         await service.notifyGroup(msg, chat)
