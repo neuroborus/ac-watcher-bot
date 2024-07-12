@@ -26,20 +26,23 @@ function startWorker() {
         // Actualize data for predictions and send graphs
         await clearLogFiles();
         if (!MONGO_CONNECTED) return;
-        await generateStatisticsAndSendGraph(time.maximizedYesterday());
+        await graphDelivery(SAMPLE.WEEK);
+    });
+
+    cron.schedule(watcher.EVERY_MONTH_PATTERN, async () => {
+        if (!MONGO_CONNECTED) return;
+        await graphDelivery(SAMPLE.MONTH);
     });
 }
 
-async function generateStatisticsAndSendGraph(nowDate) {
+async function graphDelivery(type) {
     try {
-        // !: Heavy operations -> one-by-one
-        const weekFile = await history.generateStatisticsAndGetGraph(SAMPLE.WEEK, nowDate);
-        const monthFile = await history.generateStatisticsAndGetGraph(SAMPLE.MONTH, nowDate);
-        const files = [weekFile, monthFile];
-        await telegram.service.photosToChannel(files)
-        await telegram.service.photosToUsers(files);
+        console.trace('graphDelivery() started!');
+        const file = await history.createGraph(type, time.maximizedYesterday());
+        await telegram.service.photoToChannel(file)
+        await telegram.service.photoToUsers(file);
     } catch (err) {
-        await notifications.sendAlert(`generateStatisticsAndSendGraph() -=> ${err}`, WHERE);
+        await notifications.sendAlert(`graphDelivery() -=> ${err}`, WHERE);
     }
 }
 

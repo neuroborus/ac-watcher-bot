@@ -6,9 +6,7 @@ const state = require('./telegram-state');
 const methods = require('./telegram.methods');
 const mongo = require('../mongo.service');
 
-const {checkForNextNearChanges} = require('../history/history-processor');
-
-
+const {checkForNextChange} = require('../history');
 
 
 async function logsToAdmin(layer) {
@@ -50,7 +48,7 @@ async function notifyAboutStatus(status) {
     state.setIsNotifying(true); // It is not a singleton!
 
     state.setPreviousStatus(status);
-    const msg = messages.formNotify(status, checkForNextNearChanges(new Date(), status));
+    const msg = messages.formNotify(status, checkForNextChange(new Date(), status));
     if (telegram.NOTIFY_ADMIN) {
         await methods.sendMessage(msg, telegram.ADMIN, {disable_notification: telegram.ADMIN_NOTIFY_WITH_SOUND});
     }

@@ -1,5 +1,5 @@
 module.exports = {
-    TIME_EPSILON: 1000 * 60 * 60,
+    TIME_EPSILON: 1000 * 60 * 30,
     TIMEZONE: process.env.TZ,
     LOCALE: 'sv-SE',
     SAMPLE: {

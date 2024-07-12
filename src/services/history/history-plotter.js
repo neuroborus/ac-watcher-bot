@@ -1,14 +1,15 @@
-const fs = require('node:fs').promises;
+const fs = require('node:fs/promises');
 const vegaLite = require('vega-lite');
 const vega = require('vega');
 const sharp = require('sharp');
-sharp.cache({ items: 0, memory: 0, files: 0 });
+sharp.cache({items: 0, memory: 0, files: 0});
 
 const history = require('../../configs/history.config');
-const {getGraphPath} = require('../../utils/filesystem');
+const filesystem = require('../../utils/filesystem');
 const vegaSpecV5URL = 'file:///../resources/vega-spec-v5.json';
 
 const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+
 function createSpec(url, type) {
     return {
         "$schema": vegaSpecV5URL,
@@ -16,7 +17,7 @@ function createSpec(url, type) {
             url,
         },
         "title": {
-            "text": `Power Status (${type.toUpperCase()})`,
+            "text": `Power Status (last ${type.toUpperCase()})`,
             "fontSize": 20,
             "fontWeight": "bold",
             "anchor": "start"
@@ -86,17 +87,17 @@ function createView(dataUrl, type) {
 }
 
 // Returns PNG graph path
-async function plot(dataUrl, type) {
-    const image = await createView(dataUrl, type).toSVG();
-    const pathSvg = getGraphPath(type, 'svg');
+async function plot(dataPath, type) {
+    const image = await createView(filesystem.pathToUrl(dataPath), type).toSVG();
+    const pathSvg = filesystem.getGraphPath(type, 'svg');
     await fs.writeFile(pathSvg, image);
 
-    const sh = await sharp(pathSvg, { density: history.PLOTTER_DENSITY });
+    const sh = await sharp(pathSvg, {density: history.PLOTTER_DENSITY});
     const pngBuffer = await sh.png().toBuffer();
 
-    const pathPng = getGraphPath(type, 'png');
+    const pathPng = filesystem.getGraphPath(type, 'png');
     await fs.writeFile(pathPng, pngBuffer);
-
+    await fs.rm(pathSvg);
 
     return pathPng;
 }

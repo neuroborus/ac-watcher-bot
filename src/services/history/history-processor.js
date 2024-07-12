@@ -1,9 +1,9 @@
-const fs = require('node:fs');
+const fs = require('node:fs/promises');
 const history = require('../../configs/history.config');
 const time = require('../../utils/time');
 const filesystem = require('../../utils/filesystem');
 
-function processData(sortedAscData) {
+function processGraphData(sortedAscData) {
     const result = sortedAscData.reduce((acc, cur) => {
         const size = acc.length;
         const lastInd = size - 1;
@@ -28,70 +28,30 @@ function processData(sortedAscData) {
 
     // result[0].start = time.minimizeDate(result[0].start);
     const nowDate = new Date();
-    let endBorder = time.maximizeDate(result[result.length-1].start);
+    let endBorder = time.maximizeDate(result[result.length - 1].start);
     endBorder = endBorder > nowDate ? nowDate : endBorder;
-    result[result.length-1].end = endBorder;
+    result[result.length - 1].end = endBorder;
 
     return result;
 }
 
-// Returns URL to generated timezone data
-function syncHistoryData(rawSortedData, type) {
-    const processedData = processData(rawSortedData);
+// Returns Path to generated timezone-data
+async function createGraphData(rawSortedData, type) {
+    const processedData = processGraphData(rawSortedData);
     const timezonedData = processedData.map(el => {
         if (el.start) el.start = el.start.toLocaleString(history.LOCALE, {timeZone: history.TIMEZONE});
         if (el.end) el.end = el.end.toLocaleString(history.LOCALE, {timeZone: history.TIMEZONE});
         return el;
     });
 
-    const stringifiedData = JSON.stringify(processedData, null, '\t');
     const stringifiedTimezonedData = JSON.stringify(timezonedData, null, '\t');
-
     const timezonedFile = filesystem.getTimezonedGraphDataPath(type);
-    fs.writeFileSync(filesystem.getGraphDataPath(type), stringifiedData, 'utf8');
-    fs.writeFileSync(timezonedFile, stringifiedTimezonedData, 'utf8');
+    await fs.writeFile(timezonedFile, stringifiedTimezonedData, 'utf8');
 
-    return filesystem.pathToUrl(timezonedFile);
+    return timezonedFile;
 }
 
-
-function checkForNextNearChanges(changeDate, isAvailable) {
-    let data;
-    try {
-        data = require(filesystem.getGraphDataPath(history.SAMPLE.MONTH));
-    } catch (err) {
-        console.warn("can't open month data: " + err);
-        return null;
-    }
-
-    const templateEl = getTemplateEl(data, changeDate, isAvailable);
-    if (!templateEl) return undefined;
-
-    return new Date(new Date(templateEl.end).getTime() + time.SCHEDULE_CYCLE_MS);
-}
-// Tools
-const getTemplateEl = (data, changeDate, isAvailable) => {
-    let templateEl;
-    for(let i = 0; i < data.length; i++) {
-        const el = data[i];
-        if (isTemplateEl(el, changeDate, isAvailable)) {
-            if (data.length > i && data[i+1].status === el.status) {
-                templateEl = data[i+1];
-            }
-            templateEl = el;
-            break;
-        }
-        if (new Date(el.start).getTime() > changeDate.getTime() - time.SCHEDULE_CYCLE_MS) break;
-    }
-    return templateEl;
-}
-const isTemplateEl = (el, changeDate, isAvailable) => {
-    return (isAvailable ? 'ON' : 'OFF') === el.status &&
-        new Date(el.start).getTime() - history.TIME_EPSILON < changeDate.getTime() - time.SCHEDULE_CYCLE_MS &&
-        new Date(el.end).getTime() > changeDate.getTime() - time.SCHEDULE_CYCLE_MS;
-}
 
 module.exports = {
-    syncHistoryData,
-    checkForNextNearChanges
+    createGraphData
 }

@@ -25,6 +25,15 @@ async function getLastHistory() {
     return await mongo.History.findOne().sort({createdAt: -1})
 }
 
+async function getNextHistory(prevDate) {
+    if (!MONGO_CONNECTED) return undefined;
+    return await mongo.History.findOne().sort({createdAt: 1}).filter({
+        createdAt: {
+            $gte: prevDate
+        },
+    });
+}
+
 async function findHistoriesAsc(gte, lte) {
     if (!MONGO_CONNECTED) return [];
     return await mongo.History.find(
@@ -42,18 +51,18 @@ async function findHistoriesAsc(gte, lte) {
 async function setGroupMessage(groupId, messageId) {
     if (!MONGO_CONNECTED) return undefined;
     return await mongo.GroupMessage.findOneAndUpdate(
-        { groupId },
-        { messageId },
+        {groupId},
+        {messageId},
         {
             new: true, // Always returning updated work experiences.
             upsert: true, // By setting this true, it will create if it doesn't exist
-            projection: { _id: 0, __v: 0 }, // without return _id and __v
+            projection: {_id: 0, __v: 0}, // without return _id and __v
         });
 }
 
 async function getGroupMessage(groupId) {
     if (!MONGO_CONNECTED) return undefined;
-    const obj = await mongo.GroupMessage.findOne({ groupId });
+    const obj = await mongo.GroupMessage.findOne({groupId});
     return obj?.messageId;
 }
 
@@ -62,6 +71,7 @@ module.exports = {
     getSessions,
     createHistory,
     getLastHistory,
+    getNextHistory,
     findHistoriesAsc,
     setGroupMessage,
     getGroupMessage
