@@ -31,12 +31,11 @@ async function createGraph(type, nowDate) {
 }
 
 async function checkForNextChange(changeDate, isAvailable) {
-    const templateEl = await mongo.getNextHistory(
-        new Date(changeDate.getTime() - time.SCHEDULE_CYCLE_MS + history.TIME_EPSILON),
-    );
+    const nearestDate = new Date(changeDate.getTime() - time.SCHEDULE_CYCLE_MS + history.TIME_EPSILON);
+    const templateEl = await mongo.getNextHistory(nearestDate);
     if (!templateEl || templateEl.isAvailable === isAvailable) return undefined;
 
-    return new Date(new Date(templateEl.end).getTime() + time.SCHEDULE_CYCLE_MS);
+    return new Date(new Date(templateEl.createdAt).getTime() + time.SCHEDULE_CYCLE_MS);
 }
 
 module.exports = {

@@ -5,8 +5,9 @@ const filesystem = require('../../utils/filesystem');
 const state = require('./telegram-state');
 const methods = require('./telegram.methods');
 const mongo = require('../mongo.service');
+const history = require('../history/history.service');
 
-const {checkForNextChange} = require('../history');
+const {PREDICTION} = require('../../configs/watcher.config');
 
 
 async function logsToAdmin(layer) {
@@ -48,7 +49,10 @@ async function notifyAboutStatus(status) {
     state.setIsNotifying(true); // It is not a singleton!
 
     state.setPreviousStatus(status);
-    const msg = messages.formNotify(status, await checkForNextChange(new Date(), status));
+    const change = PREDICTION ?
+        await history.checkForNextChange(new Date(), state.getPreviousStatus()) :
+        undefined;
+    const msg = messages.formNotify(status, change);
     if (telegram.NOTIFY_ADMIN) {
         await methods.sendMessage(msg, telegram.ADMIN, {disable_notification: telegram.ADMIN_NOTIFY_WITH_SOUND});
     }
