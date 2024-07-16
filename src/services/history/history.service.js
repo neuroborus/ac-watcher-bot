@@ -30,8 +30,8 @@ async function createGraph(type, nowDate) {
     return graph;
 }
 
-async function checkForNextChange(changeDate, isAvailable) {
-    const nearestDate = new Date(changeDate.getTime() - time.SCHEDULE_CYCLE_MS + history.TIME_EPSILON);
+async function checkForNextChange(changeDate, isAvailable, epsilon = history.TIME_EPSILON) {
+    const nearestDate = new Date(changeDate.getTime() - time.SCHEDULE_CYCLE_MS + epsilon);
     const templateEl = await mongo.getNextHistory(nearestDate);
     if (!templateEl || templateEl.isAvailable === isAvailable) return undefined;
 
