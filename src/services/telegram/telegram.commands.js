@@ -42,7 +42,7 @@ const status = async (ctx) => {
     }
 
     const change = PREDICTION ?
-        await history.checkForNextChange(new Date(), state.getPreviousStatus()) :
+        await history.checkForNextChange(new Date(), previousStatus) :
         undefined;
     const msg = messages.formNotify(previousStatus, change);
     if (telegram.GROUPS.includes(chat)) {
