@@ -19,7 +19,7 @@ function setPreviousStatus(prevStatus) {
     previousStatus = prevStatus;
 }
 function getPreviousStatus() {
-    return  previousStatus;
+    return previousStatus;
 }
 
 module.exports = {
