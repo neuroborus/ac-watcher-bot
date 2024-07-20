@@ -18,7 +18,7 @@ async function start() {
     worker.startWorker();
 }
 
-start().catch(e => {
+start().catch(async (e) => {
     console.error(e);
-    notifications.sendAlert(HERE, e).then(r => r);
+    await notifications.sendAlert(HERE, e).then(r => r);
 });
