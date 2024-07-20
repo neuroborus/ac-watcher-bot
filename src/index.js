@@ -2,7 +2,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const {HERE} = require('./configs/watcher.config');
-const logger = require('./utils/logger');
+const logger = require('./tools/logger');
 const telegram = require('./services/telegram');
 const worker = require('./services/worker');
 const notifications = require('./services/notifications');

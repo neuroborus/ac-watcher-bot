@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node ./src/index.js",
-    "send-data-to-db": "node scripts/send-data-to-db.js"
+    "send-data-to-db": "node ./scripts/send-data-to-db.js"
   },
   "author": "neuroborus",
   "license": "ISC",

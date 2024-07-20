@@ -1,5 +1,5 @@
 const telegram = require('../../configs/telegram.config');
-const {isEligibleChat} = require('../../utils/guard');
+const {isEligibleChat} = require('../../tools/guard');
 
 const approveEligibleChat = async (ctx, chat) => {
     if (!isEligibleChat(chat)) {

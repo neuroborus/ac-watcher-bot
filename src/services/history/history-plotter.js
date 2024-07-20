@@ -5,7 +5,7 @@ const sharp = require('sharp');
 sharp.cache({items: 0, memory: 0, files: 0});
 
 const history = require('../../configs/history.config');
-const filesystem = require('../../utils/filesystem');
+const filesystem = require('../../tools/filesystem');
 const vegaSpecV5URL = 'file:///../resources/vega-spec-v5.json';
 
 const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);

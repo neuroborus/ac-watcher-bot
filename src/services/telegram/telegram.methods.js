@@ -1,9 +1,9 @@
 const {bot} = require('./telegram-bot');
 const fs = require('node:fs');
-const time = require('../../utils/time');
+const time = require('../../tools/time');
 const telegram = require('../../configs/telegram.config');
 const notifications = require('../../configs/notifications.config');
-const filesystem = require('../../utils/filesystem');
+const filesystem = require('../../tools/filesystem');
 const informing = require('./telegram.informing');
 
 async function sendMessage(msg, recipient, options = {}, attempt = 0) {

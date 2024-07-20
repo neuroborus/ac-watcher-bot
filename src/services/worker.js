@@ -1,6 +1,6 @@
 const cron = require('node-cron');
-const time = require('../utils/time');
-const logger = require('../utils/logger');
+const time = require('../tools/time');
+const logger = require('../tools/logger');
 const watcher = require('../configs/watcher.config');
 const notifications= require('./notifications');
 const telegram = require('./telegram');

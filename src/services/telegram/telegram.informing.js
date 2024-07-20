@@ -1,6 +1,6 @@
 const {bot} = require('./telegram-bot');
-const messages = require('../../utils/messages');
-const time = require('../../utils/time');
+const messages = require('../../tools/messages');
+const time = require('../../tools/time');
 const telegram = require('../../configs/telegram.config');
 
 async function infoAdmin(what, where, level, logUrl = '', attempt = 0) {

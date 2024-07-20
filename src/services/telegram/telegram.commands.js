@@ -3,8 +3,8 @@ const guards = require('./telegram-guards');
 const service = require('./telegram.service');
 const methods = require('./telegram.methods');
 const mongo = require('../mongo.service');
-const filesystem = require('../../utils/filesystem');
-const messages = require('../../utils/messages');
+const filesystem = require('../../tools/filesystem');
+const messages = require('../../tools/messages');
 const telegram = require('../../configs/telegram.config');
 const history = require('../history');
 
@@ -12,7 +12,7 @@ const {MONGO_CONNECTED} = require('../../configs/mongo.config');
 const {SAMPLE} = require('../../configs/history.config');
 const {PREDICTION} = require('../../configs/watcher.config');
 
-const me = (ctx) => ctx.reply(`PONG: user=${ctx?.from?.id} | chat=${ctx?.update?.message?.chat?.id}`);
+const me = (ctx) => ctx.reply(`user=${ctx?.from?.id} | chat=${ctx?.update?.message?.chat?.id}`);
 const sendLogFile = async (layer, ctx) => {
     const chat = ctx?.update?.message?.chat?.id;
     if (!(await guards.approveAdminCommand(ctx, chat))) return;
