@@ -20,11 +20,15 @@ async function logsToAdmin(layer) {
 }
 
 async function fileToChannel(filename, filepath) {
-    await methods.sendFileWithRetries(filename, filepath, telegram.CHANNEL);
+    if (telegram.CHANNEL) {
+        await methods.sendFileWithRetries(filename, filepath, telegram.CHANNEL);
+    }
 }
 
 async function photoToChannel(filepath) {
-    await methods.sendPhotoWithRetries(filepath, telegram.CHANNEL);
+    if (telegram.CHANNEL) {
+        await methods.sendPhotoWithRetries(filepath, telegram.CHANNEL);
+    }
 }
 
 async function photoToUsers(filepath) {
@@ -35,7 +39,9 @@ async function photoToUsers(filepath) {
 }
 
 async function photosToChannel(photoPaths) {
-    await methods.sendPhotosGroupWithRetries(photoPaths, telegram.CHANNEL);
+    if (telegram.CHANNEL) {
+        await methods.sendPhotosGroupWithRetries(photoPaths, telegram.CHANNEL);
+    }
 }
 
 async function photosToUsers(photoPaths) {
@@ -56,7 +62,9 @@ async function notifyAboutStatus(status) {
     if (telegram.NOTIFY_ADMIN) {
         await methods.sendMessage(msg, telegram.ADMIN, {disable_notification: telegram.ADMIN_NOTIFY_WITH_SOUND});
     }
-    await methods.sendMessage(msg, telegram.CHANNEL, {disable_notification: telegram.CHANNEL_NOTIFY_WITH_SOUND});
+    if (telegram.CHANNEL) {
+        await methods.sendMessage(msg, telegram.CHANNEL, {disable_notification: telegram.CHANNEL_NOTIFY_WITH_SOUND});
+    }
     for (const user of telegram.USERS) {
         await methods.sendMessage(msg, user, {disable_notification: telegram.USERS_NOTIFY_WITH_SOUND});
     }

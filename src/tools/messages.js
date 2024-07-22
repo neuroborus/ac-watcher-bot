@@ -36,7 +36,7 @@ function formNotify(isOn, nextNearChange = null) {
 
     if (nextNearChange) {
         notify +=
-            `\n⏳ <i>The next #${isOn ? 'lost' : 'reinstatement'} is expected at approximately:` +
+            `\n⏳ <i>The next #${isOn ? 'off' : 'on'} is expected at approximately:` +
             `\n<u>${nextNearChange.toLocaleString('en-GB', {timeZone: TIMEZONE})}</u>` +
             `\t(${TIMEZONE})</i>`;
     }
