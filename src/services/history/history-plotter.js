@@ -17,7 +17,7 @@ function createSpec(url, type) {
             url,
         },
         "title": {
-            "text": `Power Status (last ${type.toUpperCase()})`,
+            "text": `Power Outages History (last ${type.toUpperCase()})`,
             "fontSize": 20,
             "fontWeight": "bold",
             "anchor": "start"
@@ -52,7 +52,7 @@ function createSpec(url, type) {
             "x": {
                 "field": "dayOfMonth",
                 "type": "nominal",
-                "title": `Day of the ${capitalize(type)}`,
+                "title": `Day Of The ${capitalize(type)}`,
                 "sort": "ascending",
                 "axis": {
                     "labelAngle": type === history.SAMPLE.WEEK ? 0 : 45,
@@ -63,18 +63,18 @@ function createSpec(url, type) {
             "y": {
                 "field": "startTimeOfDay",
                 "type": "quantitative",
-                "title": "Start Time of Day"
+                "title": "Hour Of The Day"
             },
             "y2": {
                 "field": "endTimeOfDay",
                 "type": "quantitative",
-                "title": "End Time of Day"
+                "title": `Timezone: ${history.TIMEZONE}`
             },
             "color": {
                 "field": "powerStatus",
                 "type": "nominal",
                 "scale": {"range": ["#b22222", "#228b22"]},
-                "legend": {"title": "Power Status"}
+                "legend": {"title": `Power Status`}
             }
         }
     }
