@@ -22,7 +22,9 @@ async function createHistory(isAvailable) {
 
 async function getLastHistory() {
     if (!MONGO_CONNECTED) return undefined;
-    return await mongo.History.findOne().sort({createdAt: -1})
+    return await mongo.History.findOne()
+        .lean()
+        .sort({createdAt: -1})
 }
 
 async function getNextHistory(prevDate) {
@@ -33,48 +35,56 @@ async function getNextHistory(prevDate) {
                 "$gte": prevDate
             }
         }
-    ).sort({createdAt: 1});
+    )
+        .lean()
+        .sort({createdAt: 1});
 }
 
-    async function findHistoriesAsc(gte, lte) {
-        if (!MONGO_CONNECTED) return [];
-        return await mongo.History.find(
+async function findHistoriesAsc(gte, lte) {
+    if (!MONGO_CONNECTED) return [];
+    return await mongo.History
+        .find(
             {
                 createdAt: {
                     "$gte": gte,
                     "$lte": lte
                 }
+            },
+            {
+                projection: {_id: 0, __v: 0},
             }
-        ).sort({createdAt: 1});
-    }
+        )
+        .lean()
+        .sort({createdAt: 1});
+}
 
 // GroupMessage
 
-    async function setGroupMessage(groupId, messageId) {
-        if (!MONGO_CONNECTED) return undefined;
-        return await mongo.GroupMessage.findOneAndUpdate(
-            {groupId},
-            {messageId},
-            {
-                new: true, // Always returning updated work experiences.
-                upsert: true, // By setting this true, it will create if it doesn't exist
-                projection: {_id: 0, __v: 0}, // without return _id and __v
-            });
-    }
+async function setGroupMessage(groupId, messageId) {
+    if (!MONGO_CONNECTED) return undefined;
+    return await mongo.GroupMessage.findOneAndUpdate(
+        {groupId},
+        {messageId},
+        {
+            new: true, // Always returning updated work experiences.
+            upsert: true, // By setting this true, it will create if it doesn't exist
+            projection: {_id: 0, __v: 0}, // without return _id and __v
+        }).lean();
+}
 
-    async function getGroupMessage(groupId) {
-        if (!MONGO_CONNECTED) return undefined;
-        const obj = await mongo.GroupMessage.findOne({groupId});
-        return obj?.messageId;
-    }
+async function getGroupMessage(groupId) {
+    if (!MONGO_CONNECTED) return undefined;
+    const obj = await mongo.GroupMessage.findOne({groupId}).lean();
+    return obj?.messageId;
+}
 
-    module.exports = {
-        connectToMongo,
-        getSessions,
-        createHistory,
-        getLastHistory,
-        getNextHistory,
-        findHistoriesAsc,
-        setGroupMessage,
-        getGroupMessage
-    }
+module.exports = {
+    connectToMongo,
+    getSessions,
+    createHistory,
+    getLastHistory,
+    getNextHistory,
+    findHistoriesAsc,
+    setGroupMessage,
+    getGroupMessage
+}
