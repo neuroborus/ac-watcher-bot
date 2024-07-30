@@ -63,7 +63,10 @@ function createSpec(url, type) {
             "y": {
                 "field": "startTimeOfDay",
                 "type": "quantitative",
-                "title": "Hour Of The Day"
+                "title": "Hour Of The Day",
+                /*"axis": {
+                    "values": Array.from({length: 24}, (_, i) => i)
+                }*/
             },
             "y2": {
                 "field": "endTimeOfDay",

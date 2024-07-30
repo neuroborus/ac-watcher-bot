@@ -4,19 +4,36 @@ const time = require('../../tools/time');
 const filesystem = require('../../tools/filesystem');
 
 function processGraphData(sortedAscData, nowDate) {
-    const result = sortedAscData.reduce((acc, cur) => {
-        const size = acc.length;
-        const lastInd = size - 1;
-        if (size > 0) {
-            if (acc[lastInd].start.getDate() < cur.createdAt.getDate()) {
-                acc[lastInd].end = time.maximizeDate(acc[lastInd].start);
-                acc.push({
-                    start: time.minimizeDate(cur.createdAt),
-                    end: cur.createdAt,
-                    status: acc[lastInd].status,
-                });
+
+    const fill = (start, end, status) => {
+        const result = [];
+        let currentStart = start;
+        while (time.maximizeDate(currentStart) < time.maximizeDate(end)) {
+            result.push({
+                start: currentStart,
+                end: time.maximizeDate(currentStart),
+                status,
+            });
+            currentStart = time.plusDay(time.minimizeDate(currentStart));
+        }
+        if (currentStart < end) {
+            result.push({
+                start: currentStart,
+                end,
+                status
+            });
+        }
+        return result;
+    }
+
+    let result = sortedAscData.reduce((acc, cur) => {
+        if (acc.length > 0) {
+            if (time.maximizeDate(acc[acc.length-1].start) < time.maximizeDate(cur.createdAt)) {
+                const prev = acc.pop();
+                const subArr = fill(prev.start, cur.createdAt, prev.status);
+                acc = acc.concat(subArr);
             } else {
-                acc[lastInd].end = cur.createdAt;
+                acc[acc.length-1].end = cur.createdAt;
             }
         }
         acc.push({
@@ -31,11 +48,8 @@ function processGraphData(sortedAscData, nowDate) {
     if (endBorder > nowDate) {
         result[result.length - 1].end = nowDate;
     } else {
-        result[result.length - 1].end = endBorder;
-        const lastHist = {...result[result.length - 1]};
-        lastHist.start = time.minimizeDate(nowDate);
-        lastHist.end = nowDate;
-        result.push(lastHist);
+        const subArr = fill(result[result.length - 1].start, endBorder);
+        result = result.concat(subArr);
     }
 
     return result;

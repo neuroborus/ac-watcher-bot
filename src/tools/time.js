@@ -10,7 +10,8 @@ function minimizeDate(date) {
     const newDate = new Date(date); // copy object
     newDate.setHours(0);
     newDate.setMinutes(0);
-    newDate.setSeconds(1);
+    newDate.setSeconds(0);
+    newDate.setMilliseconds(1);
     return newDate;
 }
 
@@ -19,7 +20,12 @@ function maximizeDate(date) {
     newDate.setHours(23);
     newDate.setMinutes(59);
     newDate.setSeconds(59);
+    newDate.setMilliseconds(59);
     return newDate;
+}
+
+function plusDay(date, days = 1) {
+    return new Date(date.getTime() + days * DAY_IN_MS);
 }
 
 function maximizedYesterday() {
@@ -29,7 +35,8 @@ function maximizedYesterday() {
 }
 
 const WEEK_IN_MS = 1000 * 60 * 60 * 24 * 7;
-const daysInMs = (daysInMonth) => 1000 * 60 * 60 * 24 * daysInMonth;
+const DAY_IN_MS = 1000 * 60 * 60 * 24;
+const daysInMs = (daysInMonth) => DAY_IN_MS * daysInMonth;
 
 function daysInMonth(month, year) {
     return new Date(year, month, 0).getDate();
@@ -41,6 +48,7 @@ module.exports = {
     sleep,
     maximizeDate,
     minimizeDate,
+    plusDay,
     maximizedYesterday,
     WEEK_IN_MS,
     daysInMs,
