@@ -50,7 +50,13 @@ async function graphDelivery(type) {
 
 async function penguin() {
     if (isPenguining) {
-        console.warn('penguin is already running!');
+        console.warn('penguin() is already running!');
+        return;
+    }
+    const now = new Date();
+    if (watcher.SKIP_TIME.some(({HOUR, MINUTE}) =>
+        now.getHours() === HOUR && now.getMinutes() === MINUTE)) {
+        console.trace('penguin() -=> skip by SKIP_TIME!');
         return;
     }
     isPenguining = true;
