@@ -47,7 +47,7 @@ async function graphDelivery(type) {
 }
 
 /////////////////////////////
-
+let currentPing = 1;
 async function penguin() {
     if (isPenguining) {
         console.warn('penguin() is already running!');
@@ -72,11 +72,19 @@ async function penguin() {
             await mongo.createHistory(isAvailable)
             console.trace('Sent to db!');
         } else if (isAvailable !== previous) {
+            if (currentPing <= watcher.PINGS_TO_APPROVE) {
+                ++currentPing;
+                console.trace(`penguin() -=> skip by PINGS_TO_APPROVE[${currentPing}/${watcher.PINGS_TO_APPROVE}]!`);
+                return;
+            } else {
+                currentPing = 1;
+            }
             previousStatus = isAvailable;
             console.trace('Notifying...');
             await telegram.service.notifyAboutStatus(isAvailable);
             console.trace('Notified!');
-            await mongo.createHistory(isAvailable)
+            await mongo.createHistory(isAvailable);
+            console.trace('Sent to db!');
         }
     } catch (err) {
         await notifications.sendAlert(`penguin() -=> ${err}`, WHERE);

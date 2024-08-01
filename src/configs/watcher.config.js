@@ -6,6 +6,7 @@ module.exports = {
     FOLDER_NAME: 'ac-watcher',
     REPEATABLE_WEEKS: process.env.SCHEDULE_REPEATABLE_WEEKS || 1,
     PREDICTION: process.env.IS_PREDICTION === 'true',
+    PINGS_TO_APPROVE: 2, // Short circuit happens sometimes for 1 minute
     SKIP_TIME: [ // Router reboots at 3 AM
         {
             HOUR: 3,
