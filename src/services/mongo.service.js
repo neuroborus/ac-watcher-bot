@@ -14,9 +14,9 @@ function getSessions() {
 
 // History
 
-async function createHistory(isAvailable) {
+async function createHistory(isAvailable, createdAt = undefined) {
     if (!MONGO_CONNECTED) return;
-    await mongo.History.create({isAvailable})
+    await mongo.History.create({isAvailable, createdAt})
     console.trace(`Sent to DB -> ${isAvailable}`);
 }
 

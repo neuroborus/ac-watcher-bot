@@ -83,7 +83,7 @@ async function penguin() {
             console.trace('Notifying...');
             await telegram.service.notifyAboutStatus(isAvailable);
             console.trace('Notified!');
-            await mongo.createHistory(isAvailable);
+            await mongo.createHistory(isAvailable, time.approveAgo(now));
             console.trace('Sent to db!');
         }
     } catch (err) {

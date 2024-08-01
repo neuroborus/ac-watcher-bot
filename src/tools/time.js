@@ -1,4 +1,4 @@
-const {REPEATABLE_WEEKS} = require('../configs/watcher.config');
+const watcher = require('../configs/watcher.config');
 
 async function sleep(ms) {
     return new Promise((resolve) => {
@@ -42,7 +42,12 @@ function daysInMonth(month, year) {
     return new Date(year, month, 0).getDate();
 }
 
-const SCHEDULE_CYCLE_MS = REPEATABLE_WEEKS * WEEK_IN_MS;
+const SCHEDULE_CYCLE_MS = watcher.REPEATABLE_WEEKS * WEEK_IN_MS;
+const START_TO_END_APPROVING_MS = 1000 * 60 * watcher.PING_EVERY_MINUTES * (watcher.PINGS_TO_APPROVE - 1);
+
+function approveAgo(date) {
+    return new Date(date.getTime() - START_TO_END_APPROVING_MS);
+}
 
 module.exports = {
     sleep,
@@ -53,5 +58,6 @@ module.exports = {
     WEEK_IN_MS,
     daysInMs,
     daysInMonth,
-    SCHEDULE_CYCLE_MS
+    SCHEDULE_CYCLE_MS,
+    approveAgo
 };
