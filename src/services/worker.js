@@ -76,9 +76,8 @@ async function penguin() {
                 ++currentPing;
                 console.trace(`penguin() -=> skip by PINGS_TO_APPROVE[${currentPing}/${watcher.PINGS_TO_APPROVE}]!`);
                 return;
-            } else {
-                currentPing = 1;
             }
+            currentPing = 1;
             previousStatus = isAvailable;
             console.trace('Notifying...');
             await telegram.service.notifyAboutStatus(isAvailable);
