@@ -72,7 +72,7 @@ async function penguin() {
             await mongo.createHistory(isAvailable)
             console.trace('Sent to db!');
         } else if (isAvailable !== previous) {
-            if (currentPing <= watcher.PINGS_TO_APPROVE) {
+            if (currentPing < watcher.PINGS_TO_APPROVE) {
                 ++currentPing;
                 console.trace(`penguin() -=> skip by PINGS_TO_APPROVE[${currentPing}/${watcher.PINGS_TO_APPROVE}]!`);
                 return;
