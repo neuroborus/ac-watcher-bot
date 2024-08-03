@@ -3,29 +3,28 @@ const history = require('../../configs/history.config');
 const time = require('../../tools/time');
 const filesystem = require('../../tools/filesystem');
 
-function processGraphData(sortedAscData, nowDate) {
-
-    const fill = (start, end, status) => {
-        const result = [];
-        let currentStart = start;
-        while (time.maximizeDate(currentStart) < time.maximizeDate(end)) {
-            result.push({
-                start: currentStart,
-                end: time.maximizeDate(currentStart),
-                status,
-            });
-            currentStart = time.plusDay(time.minimizeDate(currentStart));
-        }
-        if (currentStart < end) {
-            result.push({
-                start: currentStart,
-                end,
-                status
-            });
-        }
-        return result;
+const fill = (start, end, status) => {
+    const result = [];
+    let currentStart = start;
+    while (time.maximizeDate(currentStart) < time.maximizeDate(end)) {
+        result.push({
+            start: currentStart,
+            end: time.maximizeDate(currentStart),
+            status,
+        });
+        currentStart = time.plusDay(time.minimizeDate(currentStart));
     }
+    if (currentStart < end) {
+        result.push({
+            start: currentStart,
+            end,
+            status
+        });
+    }
+    return result;
+}
 
+function processGraphData(sortedAscData, nowDate) {
     let result = sortedAscData.reduce((acc, cur) => {
         if (acc.length > 0) {
             if (time.maximizeDate(acc[acc.length-1].start) < time.maximizeDate(cur.createdAt)) {
