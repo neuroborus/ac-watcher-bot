@@ -48,7 +48,7 @@ function processGraphData(sortedAscData, nowDate) {
     if (endBorder > nowDate) {
         result[result.length - 1].end = nowDate;
     } else {
-        const subArr = fill(result[result.length - 1].start, endBorder, result[result.length - 1].status);
+        const subArr = fill(result[result.length - 1].start, nowDate, result[result.length - 1].status);
         result = result.concat(subArr);
     }
 
