@@ -23,8 +23,19 @@ async function createGraph(type, nowDate) {
     }
 
     const rawSortedData = await mongo.findHistoriesAsc(gte, lte);
+    let dataPath;
+    if (rawSortedData.length) {
+        dataPath = await processor.createGraphData(rawSortedData, type, nowDate);
+    } else {
+        const prevStatus = await mongo.getLastHistory();
+        dataPath = await processor.createUnchangedGraphData(
+            type,
+            new Date(gte),
+            nowDate,
+            prevStatus?.isAvailable ?? true
+        );
+    }
 
-    const dataPath = await processor.createGraphData(rawSortedData, type, nowDate);
     const graph = await plotter.plot(dataPath, type)
     await fs.rm(dataPath);
     return graph;

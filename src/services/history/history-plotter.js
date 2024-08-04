@@ -76,7 +76,10 @@ function createSpec(url, type) {
             "color": {
                 "field": "powerStatus",
                 "type": "nominal",
-                "scale": {"range": ["#b22222", "#228b22"]},
+                "scale": {
+                    "domain": ["On", "Off"],
+                    "range": ["#228b22", "#b22222"]
+                },
                 "legend": {"title": `Power Status`}
             }
         }

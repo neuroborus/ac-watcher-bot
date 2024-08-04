@@ -3,6 +3,8 @@ const history = require('../../configs/history.config');
 const time = require('../../tools/time');
 const filesystem = require('../../tools/filesystem');
 
+const { availabilityToStatus } = require('./history-status');
+
 const fill = (start, end, status) => {
     const result = [];
     let currentStart = start;
@@ -24,7 +26,7 @@ const fill = (start, end, status) => {
     return result;
 }
 
-function processGraphData(sortedAscData, nowDate) {
+function processGraphData(sortedAscData, endDate) {
     let result = sortedAscData.reduce((acc, cur) => {
         if (acc.length > 0) {
             if (time.maximizeDate(acc[acc.length-1].start) < time.maximizeDate(cur.createdAt)) {
@@ -37,17 +39,17 @@ function processGraphData(sortedAscData, nowDate) {
         }
         acc.push({
             start: cur.createdAt,
-            status: cur.isAvailable ? 'ON' : 'OFF',
+            status: availabilityToStatus(cur.isAvailable),
         });
         return acc;
     }, []);
 
     // result[0].start = time.minimizeDate(result[0].start);
     const endBorder = time.maximizeDate(result[result.length - 1].start);
-    if (endBorder > nowDate) {
-        result[result.length - 1].end = nowDate;
+    if (endBorder > endDate) {
+        result[result.length - 1].end = endDate;
     } else {
-        const subArr = fill(result[result.length - 1].start, nowDate, result[result.length - 1].status);
+        const subArr = fill(result[result.length - 1].start, endDate, result[result.length - 1].status);
         result = result.concat(subArr);
     }
 
@@ -55,8 +57,7 @@ function processGraphData(sortedAscData, nowDate) {
 }
 
 // Returns Path to generated timezone-data
-async function createGraphData(rawSortedData, type, nowDate) {
-    const processedData = processGraphData(rawSortedData, nowDate);
+const toTimezonedFile = async (processedData, type) => {
     const timezonedData = processedData.map(el => {
         if (el.start) el.start = el.start.toLocaleString(history.LOCALE, {timeZone: history.TIMEZONE});
         if (el.end) el.end = el.end.toLocaleString(history.LOCALE, {timeZone: history.TIMEZONE});
@@ -70,7 +71,18 @@ async function createGraphData(rawSortedData, type, nowDate) {
     return timezonedFile;
 }
 
+function createGraphData(rawSortedData, type, endDate) {
+    const processedData  = processGraphData(rawSortedData, endDate);
+    return toTimezonedFile(processedData, type);
+}
+
+function createUnchangedGraphData(type, startDate, endDate, isAvailable) {
+    const data = fill(startDate, endDate, availabilityToStatus(isAvailable));
+    return toTimezonedFile(data, type);
+}
+
 
 module.exports = {
-    createGraphData
+    createGraphData,
+    createUnchangedGraphData
 }
