@@ -11,7 +11,7 @@ async function createGraph(type, nowDate) {
     const lte = nowDate.getTime();
     switch (type) {
         case history.SAMPLE.WEEK:
-            gte = lte - time.WEEK_IN_MS;
+            gte = lte - time.WEEK_IN_MS + 1;
             break;
         case history.SAMPLE.MONTH:
             const date = new Date(lte);

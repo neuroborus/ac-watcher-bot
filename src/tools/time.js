@@ -20,7 +20,7 @@ function maximizeDate(date) {
     newDate.setHours(23);
     newDate.setMinutes(59);
     newDate.setSeconds(59);
-    newDate.setMilliseconds(59);
+    newDate.setMilliseconds(999);
     return newDate;
 }
 
