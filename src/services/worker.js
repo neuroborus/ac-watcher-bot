@@ -1,3 +1,5 @@
+const fs = require('node:fs/promises');
+
 const cron = require('node-cron');
 const time = require('../tools/time');
 const logger = require('../tools/logger');
@@ -41,6 +43,7 @@ async function graphDelivery(type) {
         const file = await history.createGraph(type, time.maximizedYesterday());
         await telegram.service.photoToChannel(file)
         await telegram.service.photoToUsers(file);
+        await fs.rm(file);
     } catch (err) {
         await notifications.sendAlert(`graphDelivery() -=> ${err}`, WHERE);
     }

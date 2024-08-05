@@ -1,3 +1,5 @@
+const fs = require('node:fs/promises');
+
 const state = require('./telegram-state');
 const guards = require('./telegram-guards');
 const service = require('./telegram.service');
@@ -53,7 +55,7 @@ const status = async (ctx) => {
         await methods.sendMessage(msg, chat, {disable_notification: true});
     }
 };
-const graphTyped = async (ctx, type) => {
+const graph = async (ctx, type) => {
     const chat = ctx?.update?.message?.chat?.id;
     if (!(await guards.approveEligibleChat(ctx, chat))) return;
     console.trace(`[${chat}] Initiated sending ${type.toUpperCase()} graph to user -> ${ctx?.from?.id}`);
@@ -66,12 +68,13 @@ const graphTyped = async (ctx, type) => {
     const file = await history.createGraph(type, new Date());
     console.trace(`[${chat}] Sending ${type.toUpperCase()} graph to user -> ${ctx?.from?.id}`);
     await methods.sendPhotoWithRetries(file, chat);
+    await fs.rm(file);
 }
-const graphWeek = (ctx) => graphTyped(ctx, SAMPLE.WEEK);
-const graphMonth = (ctx) => graphTyped(ctx, SAMPLE.MONTH);
+const graphWeek = (ctx) => graph(ctx, SAMPLE.WEEK);
+const graphMonth = (ctx) => graph(ctx, SAMPLE.MONTH);
 
 
-const graph = async (ctx) => {
+const graphs = async (ctx) => {
     const chat = ctx?.update?.message?.chat?.id;
     if (!(await guards.approveEligibleChat(ctx, chat))) return;
     console.trace(`[${chat}] Initiated sending graphs to user -> ${ctx?.from?.id}`);
@@ -88,6 +91,8 @@ const graph = async (ctx) => {
     const files = [weekFile, monthFile];
     console.trace(`[${chat}] Sending graphs to user -> ${ctx?.from?.id}`);
     await methods.sendPhotosGroupWithRetries(files, chat)
+    await fs.rm(weekFile);
+    await fs.rm(monthFile);
 }
 
 function initializeCommands(bot) {
@@ -104,7 +109,7 @@ function initializeCommands(bot) {
     bot.command('status', status);
     bot.command('graph_week', graphWeek);
     bot.command('graph_month', graphMonth);
-    bot.command('graphs', graph);
+    bot.command('graphs', graphs);
 }
 
 module.exports = {
