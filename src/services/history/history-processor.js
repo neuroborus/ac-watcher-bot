@@ -3,7 +3,7 @@ const history = require('../../configs/history.config');
 const time = require('../../tools/time');
 const filesystem = require('../../tools/filesystem');
 
-const { availabilityToStatus } = require('./history-status');
+const { availabilityToStatus, changeStatus } = require('./history-status');
 
 const fill = (start, end, status) => {
     const result = [];
@@ -26,7 +26,7 @@ const fill = (start, end, status) => {
     return result;
 }
 
-function processGraphData(sortedAscData, endDate) {
+function processGraphData(sortedAscData, startDate, endDate) {
     let result = sortedAscData.reduce((acc, cur) => {
         if (acc.length > 0) {
             if (time.maximizeDate(acc[acc.length-1].start) < time.maximizeDate(cur.createdAt)) {
@@ -44,13 +44,15 @@ function processGraphData(sortedAscData, endDate) {
         return acc;
     }, []);
 
-    // result[0].start = time.minimizeDate(result[0].start);
+    const startArr = fill(startDate, result[0].start, changeStatus(result[0].status));
+    result = startArr.concat(result);
+
     const endBorder = time.maximizeDate(result[result.length - 1].start);
     if (endBorder > endDate) {
         result[result.length - 1].end = endDate;
     } else {
-        const subArr = fill(result[result.length - 1].start, endDate, result[result.length - 1].status);
-        result = result.concat(subArr);
+        const endArr = fill(result[result.length - 1].start, endDate, result[result.length - 1].status);
+        result = result.concat(endArr);
     }
 
     return result;
@@ -71,8 +73,8 @@ const toTimezonedFile = async (processedData, type) => {
     return timezonedFile;
 }
 
-function createGraphData(rawSortedData, type, endDate) {
-    const processedData  = processGraphData(rawSortedData, endDate);
+function createGraphData(rawSortedData, type, startDate, endDate) {
+    const processedData  = processGraphData(rawSortedData, startDate, endDate);
     return toTimezonedFile(processedData, type);
 }
 

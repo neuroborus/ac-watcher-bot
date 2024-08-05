@@ -25,7 +25,7 @@ async function createGraph(type, nowDate) {
     const rawSortedData = await mongo.findHistoriesAsc(gte, lte);
     let dataPath;
     if (rawSortedData.length) {
-        dataPath = await processor.createGraphData(rawSortedData, type, nowDate);
+        dataPath = await processor.createGraphData(rawSortedData, type, new Date(gte), nowDate);
     } else {
         const prevStatus = await mongo.getLastHistory();
         dataPath = await processor.createUnchangedGraphData(
