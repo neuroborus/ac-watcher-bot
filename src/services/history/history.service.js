@@ -16,7 +16,7 @@ async function createGraph(type, nowDate) {
         case history.SAMPLE.MONTH:
             const date = new Date(lte);
             const days = time.daysInMonth(date.getMonth(), date.getFullYear());
-            gte = lte - time.daysInMs(days);
+            gte = lte - time.daysInMs(days) + 1;
             break;
         default:
             return;
