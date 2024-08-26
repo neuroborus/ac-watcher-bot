@@ -90,8 +90,9 @@ async function penguin() {
         }
     } catch (err) {
         await notifications.sendAlert(`penguin() -=> ${err}`, WHERE);
+    } finally {
+        isPenguining = false;
     }
-    isPenguining = false;
 }
 
 async function checkPreviousStatus() {
