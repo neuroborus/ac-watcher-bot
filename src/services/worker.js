@@ -87,6 +87,9 @@ async function penguin() {
             console.trace('Notified!');
             await mongo.createHistory(isAvailable, time.approveAgo(now));
             console.trace('Sent to db!');
+        } else if (currentPing > 1) {
+            console.trace('Previous state was established!');
+            currentPing = 1;
         }
     } catch (err) {
         await notifications.sendAlert(`penguin() -=> ${err}`, WHERE);
