@@ -21,3 +21,19 @@ Provides ability to set up notifications about it in different ways.
 - Regular sending of graphs to the channel `(database required)`;
 - Internal logging with the ability to retrieve any level of internal logs at any time.
   ![](./docs/graphs-message.png)
+
+## Available Commands
+
+- **/graphs**: Retrieve graphs for the last week and month.
+- **/graph_week**: Retrieve the graph for the last week.
+- **/graph_month**: Retrieve the graph for the last month.
+- **/status**: Check the current status of the service.
+- **/me**: Get user and chat information, as well as service health details.
+
+
+- **/trace**: Retrieve TRACE level internal logs.
+- **/debug**: Retrieve DEBUG level internal logs.
+- **/info**: Retrieve INFO level internal logs.
+- **/warn**: Retrieve WARN level internal logs.
+- **/error**: Retrieve ERROR level internal logs.
+- **/logs**: Retrieve logs of ALL levels (TRACE, DEBUG, INFO, WARN, ERROR).
