@@ -5,6 +5,9 @@ Provides ability to set up notifications about it in different ways.
 
 * Most features are available without database connection.
 
+![](./docs/august.jpg)
+![](./docs/week.jpg)
+
 # Basic Features:
 
 ## Tracking power `outages` or `reinstatement`:
@@ -14,7 +17,7 @@ Provides ability to set up notifications about it in different ways.
 - Prediction of future `outages` or `reinstatement` based on previous week with immediate notification `(database required)`.
 
 ## Statistics and information:
-![](./docs/graphs-message.png)
 - Ability to draw an outage graph for the previous week or month at any time `(database required)`;
 - Regular sending of graphs to the channel `(database required)`;
 - Internal logging with the ability to retrieve any level of internal logs at any time.
+  ![](./docs/graphs-message.png)

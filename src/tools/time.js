@@ -7,16 +7,16 @@ async function sleep(ms) {
 }
 
 function minimizeDate(date) {
-    const newDate = new Date(date); // copy object
+    const newDate = new Date(date); // copy
     newDate.setHours(0);
     newDate.setMinutes(0);
     newDate.setSeconds(0);
-    newDate.setMilliseconds(0);
+    newDate.setMilliseconds(1);
     return newDate;
 }
 
 function maximizeDate(date) {
-    const newDate = new Date(date); // copy object
+    const newDate = new Date(date); // copy
     newDate.setHours(23);
     newDate.setMinutes(59);
     newDate.setSeconds(59);
@@ -25,7 +25,9 @@ function maximizeDate(date) {
 }
 
 function plusDay(date, days = 1) {
-    return new Date(date.getTime() + days * DAY_IN_MS);
+    const newDate = new Date(date);
+    newDate.setDate(newDate.getDate() + days); // Will automatically switch on the next month
+    return newDate;
 }
 
 function maximizedYesterday() {
@@ -55,9 +57,9 @@ module.exports = {
     minimizeDate,
     plusDay,
     maximizedYesterday,
-    WEEK_IN_MS,
     daysInMs,
     daysInMonth,
-    SCHEDULE_CYCLE_MS,
-    approveAgo
+    approveAgo,
+    WEEK_IN_MS,
+    SCHEDULE_CYCLE_MS
 };
