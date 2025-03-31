@@ -1,0 +1,8 @@
+.gitignore
+.env.example
+eslint.config.mjs
+.github
+docs
+scripts
+Dockerfile
+node_modules

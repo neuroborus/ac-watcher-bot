@@ -1,3 +1,7 @@
+### See [example](https://t.me/+Y5mFPRPLt0I2MmUy)
+
+### Description
+
 This is a telegram bot for monitoring and collecting statistics of power outages. <br>
 It collects information by pinging home router. <br>
 Allows to collect and visualise statistics, forecast future `reinstatement`/`outages`. <br>

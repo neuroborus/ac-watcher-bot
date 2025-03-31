@@ -1,8 +1,10 @@
 FROM node:20.11.1-alpine3.19 AS build
 WORKDIR /usr/src/app
-COPY ./ ./
 COPY package*.json ./
 RUN npm ci
+COPY ./ ./
+RUN npm run build
+RUN npm ci --omit=dev
 
 FROM node:20.11.1-alpine3.19 AS run
 RUN apk update && apk add --no-cache fontconfig \
