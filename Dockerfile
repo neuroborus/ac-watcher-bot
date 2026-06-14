@@ -1,20 +1,15 @@
-FROM node:20.11.1-alpine3.19 AS build
+FROM node:20-alpine AS build
 WORKDIR /usr/src/app
 COPY package*.json ./
-RUN npm ci
-COPY ./ ./
 RUN npm ci --omit=dev
 
-FROM node:20.11.1-alpine3.19 AS run
-RUN apk update && apk add --no-cache fontconfig \
-    ttf-dejavu \
-    ttf-freefont \
-    ttf-liberation && \
-    rm -rf /var/cache/apk/*
+FROM node:20-alpine AS run
+RUN apk add --no-cache fontconfig ttf-dejavu && rm -rf /var/cache/apk/*
 WORKDIR /usr/src/app
+ENV NODE_ENV=production
+ENV NODE_OPTIONS="--max-old-space-size=96"
 COPY --from=build /usr/src/app/node_modules ./node_modules
-COPY --from=build /usr/src/app/src ./src
-COPY --from=build /usr/src/app/.env ./
-# COPY --from=build /usr/src/app/scripts ./scripts
+COPY src ./src
+COPY .env ./.env
 
 CMD ["node", "./src/index.js"]

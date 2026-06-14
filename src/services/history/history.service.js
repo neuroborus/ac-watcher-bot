@@ -1,9 +1,36 @@
 const fs = require('node:fs/promises');
+const {spawn} = require('node:child_process');
+const path = require('node:path');
 const time = require('../../tools/time');
 const mongo = require('../mongo.service');
 const processor = require('./history-processor');
-const plotter = require('./history-plotter');
 const history = require('../../configs/history.config');
+
+function plotInChildProcess(dataPath, type) {
+    return new Promise((resolve, reject) => {
+        const script = path.join(__dirname, 'plot-graph-child.js');
+        const child = spawn(process.execPath, [script, dataPath, type], {
+            stdio: ['ignore', 'pipe', 'pipe'],
+        });
+
+        let stdout = '';
+        let stderr = '';
+        child.stdout.on('data', (chunk) => {
+            stdout += chunk;
+        });
+        child.stderr.on('data', (chunk) => {
+            stderr += chunk;
+        });
+        child.on('error', reject);
+        child.on('close', (code) => {
+            if (code === 0) {
+                resolve(stdout.trim());
+                return;
+            }
+            reject(new Error(`plotInChildProcess() -=> exit ${code}: ${stderr}`));
+        });
+    });
+}
 
 // Returns graph image path
 async function createGraph(type, nowDate) {
@@ -36,7 +63,7 @@ async function createGraph(type, nowDate) {
         );
     }
 
-    const graph = await plotter.plot(dataPath, type)
+    const graph = await plotInChildProcess(dataPath, type);
     await fs.rm(dataPath);
     return graph;
 }

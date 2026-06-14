@@ -89,6 +89,6 @@ jobs:
         run: |
           ssh -i ${key} -o "StrictHostKeyChecking no" ${{ env.host }} 'sudo docker load -i '${{ env.name }}'-'${{ env.stamp }}'.tar; \
           sudo docker stop '${{ env.name }}' || true; \
-          sudo docker run --log-driver json-file --log-opt max-size=10m --log-opt max-file=1 -d --restart always -p 3033:3033 --name '${{ env.name }}'-new '${{ env.name }}'-'${{ env.stamp }}'; \
+          sudo docker run --log-driver json-file --log-opt max-size=10m --log-opt max-file=1 -d --restart always -p 3033:3033 -e NODE_ENV=production -e NODE_OPTIONS='--max-old-space-size=96' --name '${{ env.name }}'-new '${{ env.name }}'-'${{ env.stamp }}'; \
           sudo docker rm '${{ env.name }}' || true; sudo docker rmi $(sudo docker images -q) || true; \
           sudo docker rename '${{ env.name }}'-new '${{ env.name }}'; rm '${{ env.name }}'-'${{ env.stamp }}'.tar'
