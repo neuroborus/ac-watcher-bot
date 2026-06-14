@@ -10,9 +10,9 @@ jobs:
   test-and-build:
     runs-on: ubuntu-latest
     env:
-      name: ${GITHUB_REPOSITORY#*/}"-dev"
+      name: ${{ github.event.repository.name }}-dev
       key: "ssh-key-scrap"
-      stamp: ${GITHUB_SHA}
+      stamp: ${{ github.sha }}
       host: ${{ vars.ORACLE_HOST }}
     steps:
       - name: Checkout code
@@ -83,12 +83,49 @@ jobs:
 
       - name: Copy image
         run: |
-          scp -i ${key} -o "StrictHostKeyChecking no" ${{ env.name }}-${{ env.stamp }}.tar ${{ env.host }}:${{ env.name }}-${{ env.stamp }}.tar
+          scp -i ${key} -o "StrictHostKeyChecking no" ${{ env.name }}-${{ env.stamp }}.tar ${{ env.host }}:~/${{ env.name }}-${{ env.stamp }}.tar
 
       - name: Start image
+        env:
+          DEPLOY_NAME: ${{ env.name }}
+          DEPLOY_STAMP: ${{ env.stamp }}
         run: |
-          ssh -i ${key} -o "StrictHostKeyChecking no" ${{ env.host }} 'sudo docker load -i '${{ env.name }}'-'${{ env.stamp }}'.tar; \
-          sudo docker stop '${{ env.name }}' || true; \
-          sudo docker run --log-driver json-file --log-opt max-size=10m --log-opt max-file=1 -d --restart always -p 3033:3033 -e NODE_ENV=production -e NODE_OPTIONS='--max-old-space-size=96' --name '${{ env.name }}'-new '${{ env.name }}'-'${{ env.stamp }}'; \
-          sudo docker rm '${{ env.name }}' || true; sudo docker rmi $(sudo docker images -q) || true; \
-          sudo docker rename '${{ env.name }}'-new '${{ env.name }}'; rm '${{ env.name }}'-'${{ env.stamp }}'.tar'
+          ssh -i ${key} -o "StrictHostKeyChecking no" ${{ env.host }} \
+            "DEPLOY_NAME='${DEPLOY_NAME}' DEPLOY_STAMP='${DEPLOY_STAMP}' bash -s" <<'EOF'
+          set -euo pipefail
+
+          TAR="${HOME}/${DEPLOY_NAME}-${DEPLOY_STAMP}.tar"
+          test -f "${TAR}"
+
+          sudo docker load -i "${TAR}"
+
+          sudo docker stop "${DEPLOY_NAME}" 2>/dev/null || true
+          sudo docker rm "${DEPLOY_NAME}" 2>/dev/null || true
+
+          sudo docker run \
+            --log-driver json-file \
+            --log-opt max-size=10m \
+            --log-opt max-file=1 \
+            -d --restart always \
+            -p 3033:3033 \
+            -e NODE_ENV=production \
+            -e "NODE_OPTIONS=--max-old-space-size=96" \
+            --name "${DEPLOY_NAME}" \
+            "${DEPLOY_NAME}-${DEPLOY_STAMP}"
+
+          for img in $(sudo docker images -q --filter "reference=${DEPLOY_NAME}-*"); do
+            if ! sudo docker ps -aq --filter "ancestor=${img}" | grep -q .; then
+              sudo docker rmi "${img}" 2>/dev/null || true
+            fi
+          done
+
+          rm -f "${TAR}"
+
+          if ! sudo docker ps --filter "name=^/${DEPLOY_NAME}$" --filter "status=running" -q | grep -q .; then
+            echo "Container ${DEPLOY_NAME} is not running"
+            sudo docker logs "${DEPLOY_NAME}" 2>/dev/null || true
+            exit 1
+          fi
+
+          sudo docker ps --filter "name=^/${DEPLOY_NAME}$"
+          EOF
